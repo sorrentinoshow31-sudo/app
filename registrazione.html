@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrazione Animatori - Sorrentino Show</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .registration-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-register:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #7f8c8d;
+            text-decoration: none;
+        }
+
+        .back-link a:hover {
+            color: #667eea;
+        }
+
+        .invite-code-info {
+            background: #f0f3ff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #667eea;
+        }
+
+        .success-container {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .success-title {
+            font-size: 24px;
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+
+        .success-message {
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+
+        .btn-login {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #27ae60;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="registration-card" id="registrationForm">
+        <div class="logo">
+            <h1>🎭 Registrazione Animatore</h1>
+            <p>Unisciti al Team Sorrentino Show!</p>
+        </div>
+
+        <form onsubmit="handleRegistration(event)">
+            <div class="form-group">
+                <label class="form-label">
+                    Nome Completo <span class="required">*</span>
+                </label>
+                <input type="text" class="form-input" id="name" required placeholder="Mario Rossi">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    Email <span class="required">*</span>
+                </label>
+                <input type="email" class="form-input" id="email" required placeholder="mario.rossi@gmail.com">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    Telefono <span class="required">*</span>
+                </label>
+                <input type="tel" class="form-input" id="phone" required placeholder="+39 333 1234567">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Data di Nascita</label>
+                <input type="date" class="form-input" id="birthdate">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Specializzazione</label>
+                <select class="form-select" id="role">
+                    <option value="Animatore Junior">Animatore Junior</option>
+                    <option value="Animatore Senior">Animatore Senior</option>
+                    <option value="Specialista Trucco">Specialista Trucco</option>
+                    <option value="Specialista Magia">Specialista Magia</option>
+                    <option value="Mascotte">Mascotte</option>
+                    <option value="Animatore Sportivo">Animatore Sportivo</option>
+                    <option value="Specialista Bolle">Specialista Bolle di Sapone</option>
+                    <option value="DJ Animatore">DJ/Musica</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    Password <span class="required">*</span>
+                    <small style="color: #7f8c8d;">(minimo 6 caratteri)</small>
+                </label>
+                <input type="password" class="form-input" id="password" required minlength="6" placeholder="Crea una password sicura">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    Conferma Password <span class="required">*</span>
+                </label>
+                <input type="password" class="form-input" id="passwordConfirm" required placeholder="Ripeti la password">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Codice Invito</label>
+                <input type="text" class="form-input" id="inviteCode" placeholder="ES: SORR2024">
+                <div class="invite-code-info">
+                    💡 Se hai ricevuto un codice invito da Sorrentino Show, inseriscilo per l'approvazione immediata. 
+                    Altrimenti, la tua registrazione sarà verificata dall'amministratore.
+                </div>
+            </div>
+
+            <button type="submit" class="btn-register" id="submitBtn">
+                Completa Registrazione
+            </button>
+
+            <div class="message" id="message"></div>
+        </form>
+
+        <div class="back-link">
+            <a href="index.html">← Torna al Login</a>
+        </div>
+    </div>
+
+    <div class="registration-card success-container" id="successContainer">
+        <div class="success-icon">✅</div>
+        <h2 class="success-title">Registrazione Completata!</h2>
+        <p class="success-message" id="successMsg">
+            Il tuo account è stato creato con successo. Ora puoi accedere all'app!
+        </p>
+        <a href="index.html" class="btn-login">Vai al Login</a>
+    </div>
+
+    <script>
+        // Codici invito validi
+        const VALID_CODES = ['SORR2024', 'TEAM2024', 'SHOW2024', 'NATALE2024'];
+
+        function handleRegistration(event) {
+            event.preventDefault();
+            
+            // Raccogli i dati dal form
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const birthdate = document.getElementById('birthdate').value;
+            const role = document.getElementById('role').value;
+            const password = document.getElementById('password').value;
+            const passwordConfirm = document.getElementById('passwordConfirm').value;
+            const inviteCode = document.getElementById('inviteCode').value.trim().toUpperCase();
+            
+            // Validazioni
+            if (password !== passwordConfirm) {
+                showMessage('Le password non coincidono!', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showMessage('La password deve essere di almeno 6 caratteri!', 'error');
+                return;
+            }
+            
+            // Carica animatori esistenti
+            let animators = JSON.parse(localStorage.getItem('animators') || '[]');
+            
+            // Controlla se l'email esiste già
+            if (animators.find(a => a.email === email)) {
+                showMessage('Email già registrata! Usa il login.', 'error');
+                return;
+            }
+            
+            // Verifica codice invito
+            const hasValidCode = inviteCode && VALID_CODES.includes(inviteCode);
+            
+            // Crea nuovo animatore
+            const newAnimator = {
+                id: Date.now().toString(),
+                name: name,
+                email: email,
+                phone: phone,
+                birthdate: birthdate,
+                role: role,
+                password: btoa(password), // Codifica base64 semplice
+                status: 'available',
+                registeredAt: new Date().toISOString(),
+                approved: hasValidCode,
+                inviteCode: inviteCode
+            };
+            
+            // Salva nel localStorage
+            animators.push(newAnimator);
+            localStorage.setItem('animators', JSON.stringify(animators));
+            
+            // Mostra messaggio di successo
+            if (hasValidCode) {
+                showSuccess('Registrazione completata! Puoi ora accedere all\'app con le tue credenziali.');
+            } else {
+                showSuccess('Registrazione inviata! La tua richiesta sarà verificata dall\'amministratore. Riceverai conferma a breve.');
+            }
+            
+            // Disabilita il form
+            document.getElementById('submitBtn').disabled = true;
+        }
+        
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = 'message ' + type;
+            
+            // Nascondi dopo 5 secondi
+            setTimeout(() => {
+                messageEl.className = 'message';
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            document.getElementById('successMsg').textContent = message;
+            document.getElementById('registrationForm').style.display = 'none';
+            document.getElementById('successContainer').style.display = 'block';
+        }
+        
+        // Inizializza animatori di esempio se non esistono
+        window.onload = function() {
+            let animators = JSON.parse(localStorage.getItem('animators') || '[]');
+            
+            if (animators.length === 0) {
+                // Aggiungi alcuni animatori di esempio
+                const sampleAnimators = [
+                    {
+                        id: '1',
+                        name: 'Mario Rossi',
+                        email: 'mario@sorrentino.it',
+                        phone: '+39 333 1234567',
+                        role: 'Animatore Senior',
+                        password: btoa('123456'),
+                        status: 'available',
+                        approved: true
+                    },
+                    {
+                        id: '2',
+                        name: 'Luigi Bianchi',
+                        email: 'luigi@sorrentino.it',
+                        phone: '+39 333 7654321',
+                        role: 'Animatore Junior',
+                        password: btoa('123456'),
+                        status: 'available',
+                        approved: true
+                    }
+                ];
+                
+                localStorage.setItem('animators', JSON.stringify(sampleAnimators));
+            }
+        };
+    </script>
+</body>
+</html>
