@@ -1,1389 +1,1373 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.6">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Sorrentino Show - Gestione Eventi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .app-container {
+            display: none;
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            padding-top: 60px;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .user-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .tabs {
+            display: flex;
+            background: white;
+            margin: 0 -20px -20px -20px;
+            padding: 0 20px;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            color: #764ba2;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab.active {
+            color: #667eea;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            right: 20%;
+            height: 3px;
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        .content {
+            padding: 20px;
+            padding-bottom: 80px;
+            min-height: calc(100vh - 150px);
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .event-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .event-date {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .event-type {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .event-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #34495e;
+        }
+
+        .event-info-icon {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+
+        .btn-action {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-start {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-materials {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-complete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .timer-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .timer-time {
+            font-size: 36px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .animator-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .animator-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .animator-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-available {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-busy {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 450px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-modal {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel {
+            background: #e0e0e0;
+            color: #7f8c8d;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .materials-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .material-item {
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .material-code {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 3000;
+            animation: slideInRight 0.3s ease;
+        }
+
+        .notification.show {
+            display: flex;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .app-container {
+                max-width: 100%;
+            }
+            
+            .modal-content {
+                width: 95%;
+            }
+        }
+
+        /* Version indicator */
+        .version-badge {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 10px;
+            z-index: 100;
+        }
+    </style>
 </head>
 <body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html lang="it"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="apple-mobile-web-app-capable" content="yes"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Sorrentino Show - Gestione Eventi&lt;/title&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>* {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-sizing: border-box;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>-webkit-tap-highlight-color: transparent;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>body {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>min-height: 100vh;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow-x: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.login-container {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>min-height: 100vh;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.login-card {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 40px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>max-width: 400px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 20px 60px rgba(0,0,0,0.3);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animation: slideUp 0.5s ease;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>@keyframes slideUp {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>from { transform: translateY(30px); opacity: 0; }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>to { transform: translateY(0); opacity: 1; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.logo {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 30px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.logo h1 {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 32px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>-webkit-background-clip: text;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>-webkit-text-fill-color: transparent;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 5px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.logo p {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #7f8c8d;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 14px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.form-group {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.form-label {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: block;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #2c3e50;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 500;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.form-input, .form-select, .form-textarea {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 12px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: 2px solid #e0e0e0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 16px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: all 0.3s ease;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-family: inherit;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.form-input:focus, .form-select:focus, .form-textarea:focus {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>outline: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-color: #667eea;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn-login {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 14px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 16px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: all 0.3s ease;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn-login:hover {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transform: translateY(-2px);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.app-container {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>max-width: 500px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin: 0 auto;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>min-height: 100vh;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 0 30px rgba(0,0,0,0.1);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.app-header {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding-top: 60px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: sticky;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>top: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>z-index: 100;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.header-content {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: space-between;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.header-title {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 24px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.user-badge {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(255,255,255,0.2);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 5px 12px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 14px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.logout-btn {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>top: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>right: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(255,255,255,0.2);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 8px 16px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 14px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: all 0.3s ease;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.logout-btn:hover {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(255,255,255,0.3);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.tabs {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin: 0 -20px -20px -20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 20px 20px 0 0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.tab {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex: 1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #764ba2;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 500;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: all 0.3s ease;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: relative;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.tab.active {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #667eea;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.tab.active::after {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>content: '';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>bottom: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>left: 20%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>right: 20%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 3px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #667eea;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 3px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.content {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding-bottom: 80px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>min-height: calc(100vh - 150px);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.section {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animation: fadeIn 0.3s ease;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.section.active {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: block;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>@keyframes fadeIn {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>from { opacity: 0; transform: translateY(10px); }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>to { opacity: 1; transform: translateY(0); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.event-card {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 5px 15px rgba(0,0,0,0.1);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: transform 0.3s ease;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.event-card:hover {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transform: translateY(-5px);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.event-header {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: space-between;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.event-date {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 18px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #2c3e50;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.event-type {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #667eea;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 5px 12px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 12px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.event-info {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 14px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #34495e;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.event-info-icon {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-right: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 16px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn-action {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 12px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: all 0.3s ease;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn-start {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #27ae60;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn-materials {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #3498db;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn-complete {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #e74c3c;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn-action:hover {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transform: translateY(-2px);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 5px 15px rgba(0,0,0,0.2);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.timer-display {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.timer-time {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 36px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 700;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-family: 'Courier New', monospace;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.stat-card {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 5px 15px rgba(0,0,0,0.1);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.stat-value {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 32px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 700;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>-webkit-background-clip: text;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>-webkit-text-fill-color: transparent;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.stat-label {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #7f8c8d;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 14px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.animator-item {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: space-between;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 2px 5px rgba(0,0,0,0.05);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.animator-name {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #2c3e50;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.animator-status {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 5px 12px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 12px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.status-available {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #d4edda;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #155724;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.status-busy {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #f8d7da;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #721c24;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.fab {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: fixed;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>bottom: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>right: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 60px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 60px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 50%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 28px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: all 0.3s ease;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>z-index: 1000;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.fab:hover {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transform: scale(1.1) rotate(90deg);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.modal {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: fixed;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>top: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>left: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>right: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>bottom: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(0,0,0,0.7);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>z-index: 2000;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.modal.active {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animation: fadeIn 0.3s ease;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.modal-content {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 30px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 90%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>max-width: 450px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>max-height: 90vh;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow-y: auto;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animation: slideUp 0.3s ease;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.modal-title {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 24px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #2c3e50;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.modal-buttons {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn-modal {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex: 1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 12px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: all 0.3s ease;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn-cancel {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #e0e0e0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #7f8c8d;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn-save {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.materials-section {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #f8f9fa;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.material-item {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 12px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: space-between;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.material-code {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #667eea;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 4px 8px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 5px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 12px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.notification {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: fixed;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>top: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>right: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 15px 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 5px 20px rgba(0,0,0,0.2);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>z-index: 3000;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animation: slideInRight 0.3s ease;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.notification.show {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>@keyframes slideInRight {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>from { transform: translateX(100%); }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>to { transform: translateX(0); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.empty-state {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 40px 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #7f8c8d;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.empty-icon {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 48px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Mobile optimizations */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>@media (max-width: 768px) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>.app-container {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>max-width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>.modal-content {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>width: 95%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Version indicator */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.version-badge {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: fixed;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>bottom: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>left: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(0,0,0,0.5);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 5px 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 5px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>z-index: 100;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Login Screen --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="login-container" id="loginScreen"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="login-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="logo"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;h1&gt;🎉 Sorrentino Show&lt;/h1&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;p&gt;Agenzia di Animazione&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="form-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label class="form-label"&gt;Tipo Accesso&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;select class="form-select" id="userType" onchange="updateLoginHint()"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option value=""&gt;Seleziona...&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option value="admin"&gt;Amministratore&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option value="animator"&gt;Animatore&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/select&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="form-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label class="form-label"&gt;Email&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;input type="email" class="form-input" id="email" placeholder="email@sorrentino.it"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="form-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label class="form-label"&gt;Password&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;input type="password" class="form-input" id="password" placeholder="Password"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;button class="btn-login" onclick="login()"&gt;Accedi&lt;/button&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="loginHint" style="text-align: center; margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 8px; display: none;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;small style="color: #666;"&gt;&lt;/small&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Admin App --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="app-container" id="adminApp"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="app-header"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;button class="logout-btn" onclick="logout()"&gt;Esci&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="header-content"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;h1 class="header-title"&gt;🎉 Sorrentino Show&lt;/h1&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="user-badge"&gt;Admin&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="tabs"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="tab active" onclick="switchTab('dashboard', 'admin')"&gt;Dashboard&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="tab" onclick="switchTab('events', 'admin')"&gt;Eventi&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="tab" onclick="switchTab('team', 'admin')"&gt;Team&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="tab" onclick="switchTab('monitor', 'admin')"&gt;Monitor&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="content"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Dashboard --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="admin-dashboard" class="section active"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="stat-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="stat-value" id="todayEvents"&gt;0&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="stat-label"&gt;Eventi Oggi&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="stat-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="stat-value" id="activeAnimators"&gt;0&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="stat-label"&gt;Animatori Attivi&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="stat-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="stat-value" id="monthHours"&gt;0h&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="stat-label"&gt;Ore Totali Mese&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Events --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="admin-events" class="section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div id="eventsList"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="empty-state" id="noEvents" style="display: none;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="empty-icon"&gt;📅&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;p&gt;Nessun evento programmato&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;p style="font-size: 14px;"&gt;Clicca + per aggiungere un evento&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Team --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="admin-team" class="section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;button class="btn-action btn-start" onclick="openAnimatorModal()" style="margin-bottom: 20px;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>➕ Aggiungi Animatore</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div id="teamList"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Monitor --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="admin-monitor" class="section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="stat-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;h3 style="margin-bottom: 15px;"&gt;🔴 Attività Live&lt;/h3&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div id="liveActivities"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="stat-card" style="margin-top: 20px;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;h3 style="margin-bottom: 15px;"&gt;📊 Storico Attività&lt;/h3&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div id="activityLog"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;button class="fab" onclick="openEventModal()"&gt;+&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Animator App --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="app-container" id="animatorApp"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="app-header"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;button class="logout-btn" onclick="logout()"&gt;Esci&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="header-content"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;h1 class="header-title"&gt;🎉 I Miei Turni&lt;/h1&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="user-badge" id="animatorName"&gt;Animatore&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="tabs"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="tab active" onclick="switchTab('turni', 'animator')"&gt;Turni&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="tab" onclick="switchTab('active', 'animator')"&gt;In Corso&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="tab" onclick="switchTab('history', 'animator')"&gt;Storico&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="content"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Turni --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="animator-turni" class="section active"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div id="myEventsList"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="empty-state" id="noTurni" style="display: none;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="empty-icon"&gt;📋&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;p&gt;Nessun turno assegnato&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Active --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="animator-active" class="section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="timer-display"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;Tempo Lavorato&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="timer-time" id="workTimer"&gt;00:00:00&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="materials-section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;h3&gt;📦 Materiali Evento&lt;/h3&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;input type="text" class="form-input" id="materialCode"<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                           </span>placeholder="Inserisci codice materiale (es: 001)"<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                           </span>onkeypress="if(event.key==='Enter') addMaterial()" style="margin: 10px 0;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div id="materialsList"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;button class="btn-action btn-complete" onclick="completeWork()"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>✅ Completa Turno</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- History --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="animator-history" class="section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div id="workHistory"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="empty-state" id="noHistory" style="display: none;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="empty-icon"&gt;📊&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;p&gt;Nessun turno completato&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Event Modal --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="modal" id="eventModal"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="modal-content"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;h2 class="modal-title"&gt;📅 Nuovo Evento&lt;/h2&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="form-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label class="form-label"&gt;Data Evento&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;input type="date" class="form-input" id="eventDate"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="form-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label class="form-label"&gt;Ora Inizio&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;input type="time" class="form-input" id="eventTime"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="form-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label class="form-label"&gt;Tipo Evento&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;select class="form-select" id="eventType"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Compleanno Bambini&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Compleanno Adulti&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Matrimonio&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Evento Aziendale&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Festa Privata&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Evento Pubblico&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/select&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="form-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label class="form-label"&gt;Pacchetto&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;select class="form-select" id="eventPackage"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Basic&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Standard&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Deluxe&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Premium&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/select&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="form-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label class="form-label"&gt;Indirizzo&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;input type="text" class="form-input" id="eventAddress" placeholder="Via/Piazza..."&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="form-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label class="form-label"&gt;Animatori Assegnati&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;select class="form-select" id="eventAnimators" multiple style="height: 100px;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;!-- Will be populated dynamically --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/select&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="modal-buttons"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;button class="btn-modal btn-cancel" onclick="closeModal('eventModal')"&gt;Annulla&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;button class="btn-modal btn-save" onclick="saveEvent()"&gt;Salva Evento&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Animator Modal --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="modal" id="animatorModal"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="modal-content"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;h2 class="modal-title"&gt;👤 Nuovo Animatore&lt;/h2&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="form-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label class="form-label"&gt;Nome Completo&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;input type="text" class="form-input" id="animatorFullName" placeholder="Nome e Cognome"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="form-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label class="form-label"&gt;Email&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;input type="email" class="form-input" id="animatorEmail" placeholder="nome@sorrentino.it"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="form-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label class="form-label"&gt;Telefono&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;input type="tel" class="form-input" id="animatorPhone" placeholder="+39 333 1234567"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="form-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label class="form-label"&gt;Ruolo&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;select class="form-select" id="animatorRole"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Animatore Junior&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Animatore Senior&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Capo Animatore&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Specialista Trucco&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Specialista Magia&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option&gt;Mascotte&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/select&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="modal-buttons"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;button class="btn-modal btn-cancel" onclick="closeModal('animatorModal')"&gt;Annulla&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;button class="btn-modal btn-save" onclick="saveAnimator()"&gt;Salva Animatore&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Notification --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="notification" id="notification"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;span style="font-size: 24px;"&gt;🔔&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div style="font-weight: 600;" id="notificationTitle"&gt;Notifica&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div style="font-size: 14px; color: #7f8c8d;" id="notificationMessage"&gt;Messaggio&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Version Badge --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="version-badge"&gt;v1.0.0 - 2024&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// App State</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let currentUser = null;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let events = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let animators = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let workLogs = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let materials = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let workTimer = null;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let workStartTime = null;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let currentEventId = null;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Material Database</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const materialDatabase = {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>'001': 'Birilli colorati',</p>
-<p class="p1"><span class="Apple-converted-space">            </span>'002': 'Set colori e pennelli',</p>
-<p class="p1"><span class="Apple-converted-space">            </span>'003': 'Barattoli gioco',</p>
-<p class="p1"><span class="Apple-converted-space">            </span>'004': 'Pallone gonfiabile',</p>
-<p class="p1"><span class="Apple-converted-space">            </span>'005': 'Corda tiro alla fune',</p>
-<p class="p1"><span class="Apple-converted-space">            </span>'006': 'Box spugne',</p>
-<p class="p1"><span class="Apple-converted-space">            </span>'007': 'Cerchi colorati',</p>
-<p class="p1"><span class="Apple-converted-space">            </span>'008': 'Coni segnalatori',</p>
-<p class="p1"><span class="Apple-converted-space">            </span>'009': 'Kit trucca bimbi',</p>
-<p class="p1"><span class="Apple-converted-space">            </span>'010': 'Microfono e casse',</p>
-<p class="p1"><span class="Apple-converted-space">            </span>'011': 'Costume mascotte',</p>
-<p class="p1"><span class="Apple-converted-space">            </span>'012': 'Macchina bolle sapone'</p>
-<p class="p1"><span class="Apple-converted-space">        </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Initialize</p>
-<p class="p1"><span class="Apple-converted-space">        </span>window.onload = function() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>loadFromStorage();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>initializeSampleData();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function loadFromStorage() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>events = JSON.parse(localStorage.getItem('events') || '[]');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animators = JSON.parse(localStorage.getItem('animators') || '[]');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>workLogs = JSON.parse(localStorage.getItem('workLogs') || '[]');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function saveToStorage() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>localStorage.setItem('events', JSON.stringify(events));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>localStorage.setItem('animators', JSON.stringify(animators));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>localStorage.setItem('workLogs', JSON.stringify(workLogs));</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function initializeSampleData() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (animators.length === 0) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>animators = [</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>{ id: '1', name: 'Mario Rossi', email: 'mario@sorrentino.it', role: 'Animatore Senior', status: 'available' },</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>{ id: '2', name: 'Luigi Bianchi', email: 'luigi@sorrentino.it', role: 'Animatore Junior', status: 'available' },</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>{ id: '3', name: 'Anna Ferrari', email: 'anna@sorrentino.it', role: 'Specialista Trucco', status: 'busy' },</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>{ id: '4', name: 'Marco Verdi', email: 'marco@sorrentino.it', role: 'Capo Animatore', status: 'available' }</p>
-<p class="p1"><span class="Apple-converted-space">                </span>];</p>
-<p class="p1"><span class="Apple-converted-space">                </span>saveToStorage();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function updateLoginHint() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const userType = document.getElementById('userType').value;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const hint = document.getElementById('loginHint');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const hintText = hint.querySelector('small');</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (userType === 'admin') {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>hintText.innerHTML = '📧 admin@sorrentino.it&lt;br&gt;🔑 admin123';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>hint.style.display = 'block';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>hint.style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function login() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const userType = document.getElementById('userType').value;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const email = document.getElementById('email').value;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const password = document.getElementById('password').value;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (!userType || !email || !password) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>showNotification('Errore', 'Compila tutti i campi');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Simple authentication</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (userType === 'admin' &amp;&amp; email === 'admin@sorrentino.it' &amp;&amp; password === 'admin123') {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>currentUser = { type: 'admin', email: email, name: 'Amministratore' };</p>
-<p class="p1"><span class="Apple-converted-space">                </span>showAdminApp();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else if (userType === 'animator' &amp;&amp; email.includes('@sorrentino.it') &amp;&amp; password === '123456') {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const animator = animators.find(a =&gt; a.email === email);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>currentUser = {<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>type: 'animator',<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>email: email,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>name: animator ? animator.name : email.split('@')[0],</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>id: animator ? animator.id : Date.now().toString()</p>
-<p class="p1"><span class="Apple-converted-space">                </span>};</p>
-<p class="p1"><span class="Apple-converted-space">                </span>showAnimatorApp();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>showNotification('Errore', 'Credenziali non valide');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function logout() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>currentUser = null;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (workTimer) clearInterval(workTimer);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('loginScreen').style.display = 'flex';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('adminApp').style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('animatorApp').style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function showAdminApp() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('loginScreen').style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('adminApp').style.display = 'block';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>loadAdminDashboard();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>loadEvents();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>loadTeam();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function showAnimatorApp() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('loginScreen').style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('animatorApp').style.display = 'block';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('animatorName').textContent = currentUser.name;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>showNotification('Benvenuto!', 'Hai nuovi turni assegnati');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>loadAnimatorEvents();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>loadWorkHistory();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function switchTab(tabName, appType) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const prefix = appType === 'admin' ? 'admin-' : 'animator-';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const app = appType === 'admin' ? 'adminApp' : 'animatorApp';</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Remove active class from all tabs and sections</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.querySelectorAll(`#${app} .tab`).forEach(t =&gt; t.classList.remove('active'));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.querySelectorAll(`#${app} .section`).forEach(s =&gt; s.classList.remove('active'));</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Add active class to clicked tab and corresponding section</p>
-<p class="p1"><span class="Apple-converted-space">            </span>event.target.classList.add('active');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const section = document.getElementById(prefix + tabName);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (section) section.classList.add('active');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function loadAdminDashboard() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const today = new Date().toISOString().split('T')[0];</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const todayEvents = events.filter(e =&gt; e.date === today).length;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const activeAnimators = workLogs.filter(w =&gt; !w.endTime).length;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const monthHours = workLogs.reduce((total, log) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (log.duration) return total + log.duration;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>return total;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}, 0);</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('todayEvents').textContent = todayEvents;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('activeAnimators').textContent = activeAnimators;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('monthHours').textContent = Math.round(monthHours / 3600000) + 'h';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function loadEvents() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const eventsList = document.getElementById('eventsList');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const noEvents = document.getElementById('noEvents');</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (events.length === 0) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>eventsList.style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>noEvents.style.display = 'block';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>eventsList.style.display = 'block';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>noEvents.style.display = 'none';</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>eventsList.innerHTML = events.map(event =&gt; `</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="event-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="event-header"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="event-date"&gt;${formatDate(event.date)}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="event-type"&gt;${event.package}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="event-info"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span class="event-info-icon"&gt;🎊&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>${event.type}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="event-info"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span class="event-info-icon"&gt;⏰&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>${event.time}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="event-info"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span class="event-info-icon"&gt;📍&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>${event.address}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="event-info"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span class="event-info-icon"&gt;👥&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>${event.animators ? event.animators.join(', ') : 'Nessun animatore assegnato'}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;button class="btn-action btn-complete" onclick="deleteEvent('${event.id}')"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>🗑️ Elimina</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>`).join('');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Update monitor section</p>
-<p class="p1"><span class="Apple-converted-space">            </span>loadMonitor();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function loadTeam() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const teamList = document.getElementById('teamList');</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>teamList.innerHTML = animators.map(animator =&gt; `</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="animator-item"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="animator-name"&gt;${animator.name}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div style="font-size: 12px; color: #7f8c8d;"&gt;${animator.role}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="animator-status ${animator.status === 'available' ? 'status-available' : 'status-busy'}"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>${animator.status === 'available' ? 'Disponibile' : 'In Servizio'}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>`).join('');</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Update event modal with animators</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const animatorSelect = document.getElementById('eventAnimators');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animatorSelect.innerHTML = animators.map(a =&gt;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>`&lt;option value="${a.name}"&gt;${a.name} - ${a.role}&lt;/option&gt;`</p>
-<p class="p1"><span class="Apple-converted-space">            </span>).join('');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function loadMonitor() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Live activities</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const liveActivities = document.getElementById('liveActivities');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const activeWork = workLogs.filter(w =&gt; !w.endTime);</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (activeWork.length === 0) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>liveActivities.innerHTML = '&lt;p style="color: #7f8c8d;"&gt;Nessuna attività in corso&lt;/p&gt;';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>liveActivities.innerHTML = activeWork.map(work =&gt; `</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div style="padding: 10px; background: #f0f0f0; border-radius: 8px; margin-bottom: 10px;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;strong&gt;${work.animatorName}&lt;/strong&gt; - In servizio</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>Iniziato: ${new Date(work.startTime).toLocaleTimeString('it-IT')}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>`).join('');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Activity log</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const activityLog = document.getElementById('activityLog');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const recentLogs = workLogs.slice(-5).reverse();</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (recentLogs.length === 0) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>activityLog.innerHTML = '&lt;p style="color: #7f8c8d;"&gt;Nessuna attività registrata&lt;/p&gt;';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>activityLog.innerHTML = recentLogs.map(log =&gt; `</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div style="padding: 10px; border-bottom: 1px solid #e0e0e0;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;strong&gt;${log.animatorName}&lt;/strong&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div style="font-size: 12px; color: #7f8c8d;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>${new Date(log.startTime).toLocaleString('it-IT')}</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>${log.endTime ? ` - Durata: ${Math.round(log.duration / 3600000)}h` : ' - In corso'}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>`).join('');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function loadAnimatorEvents() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const myEventsList = document.getElementById('myEventsList');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const noTurni = document.getElementById('noTurni');</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Filter events assigned to current animator</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const myEvents = events.filter(e =&gt;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>e.animators &amp;&amp; e.animators.includes(currentUser.name)</p>
-<p class="p1"><span class="Apple-converted-space">            </span>);</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (myEvents.length === 0) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>myEventsList.style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>noTurni.style.display = 'block';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>myEventsList.style.display = 'block';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>noTurni.style.display = 'none';</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>myEventsList.innerHTML = myEvents.map(event =&gt; `</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="event-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="event-header"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="event-date"&gt;${formatDate(event.date)}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="event-type"&gt;${event.package}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="event-info"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span class="event-info-icon"&gt;🎊&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>${event.type}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="event-info"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span class="event-info-icon"&gt;⏰&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>${event.time}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="event-info"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span class="event-info-icon"&gt;📍&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>${event.address}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;button class="btn-action btn-start" onclick="startWork('${event.id}')"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>🚀 Inizia Turno</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>`).join('');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function loadWorkHistory() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const workHistory = document.getElementById('workHistory');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const noHistory = document.getElementById('noHistory');</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>const myHistory = workLogs.filter(w =&gt;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>w.animatorId === currentUser.id &amp;&amp; w.endTime</p>
-<p class="p1"><span class="Apple-converted-space">            </span>);</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (myHistory.length === 0) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>workHistory.style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>noHistory.style.display = 'block';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>workHistory.style.display = 'block';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>noHistory.style.display = 'none';</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>workHistory.innerHTML = myHistory.map(log =&gt; `</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="event-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="event-header"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="event-date"&gt;${formatDate(log.startTime)}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="event-type"&gt;Completato&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="event-info"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span class="event-info-icon"&gt;⏱️&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>Durata: ${Math.round(log.duration / 3600000)}h ${Math.round((log.duration % 3600000) / 60000)}min</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="event-info"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span class="event-info-icon"&gt;📦&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>Materiali: ${log.materials ? log.materials.length : 0} items</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>`).join('');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function startWork(eventId) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (confirm('Confermi di iniziare il turno?')) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>currentEventId = eventId;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>workStartTime = new Date();</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Create work log</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const workLog = {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>id: Date.now().toString(),</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>eventId: eventId,</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>animatorId: currentUser.id,</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>animatorName: currentUser.name,</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>startTime: workStartTime.toISOString(),</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>materials: []</p>
-<p class="p1"><span class="Apple-converted-space">                </span>};</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>workLogs.push(workLog);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>saveToStorage();</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Update animator status</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const animator = animators.find(a =&gt; a.name === currentUser.name);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (animator) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>animator.status = 'busy';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>saveToStorage();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Start timer</p>
-<p class="p1"><span class="Apple-converted-space">                </span>startTimer();</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Switch to active tab</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.querySelectorAll('#animatorApp .tab').forEach(t =&gt; t.classList.remove('active'));</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.querySelectorAll('#animatorApp .section').forEach(s =&gt; s.classList.remove('active'));</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.querySelector('#animatorApp .tab:nth-child(2)').classList.add('active');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('animator-active').classList.add('active');</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>showNotification('Turno Iniziato!', 'Timer avviato. Buon lavoro!');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function startTimer() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>workTimer = setInterval(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const now = new Date();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const diff = now - workStartTime;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const hours = Math.floor(diff / 3600000);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const minutes = Math.floor((diff % 3600000) / 60000);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const seconds = Math.floor((diff % 60000) / 1000);</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('workTimer').textContent =<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}, 1000);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function addMaterial() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const input = document.getElementById('materialCode');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const code = input.value.trim();</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (materialDatabase[code]) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (!materials.find(m =&gt; m.code === code)) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>materials.push({ code, name: materialDatabase[code] });</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>updateMaterialsList();</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>input.value = '';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>showNotification('Materiale Aggiunto', materialDatabase[code]);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>showNotification('Errore', 'Codice materiale non valido');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function updateMaterialsList() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const list = document.getElementById('materialsList');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>list.innerHTML = materials.map(m =&gt; `</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="material-item"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="material-code"&gt;${m.code}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span style="margin-left: 10px;"&gt;${m.name}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;button onclick="removeMaterial('${m.code}')" style="background: none; border: none; cursor: pointer;"&gt;❌&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>`).join('');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function removeMaterial(code) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>materials = materials.filter(m =&gt; m.code !== code);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>updateMaterialsList();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function completeWork() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (!workStartTime) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>showNotification('Errore', 'Nessun turno attivo');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (confirm('Confermi di aver completato il turno e rimesso tutto in magazzino?')) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>clearInterval(workTimer);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const endTime = new Date();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const duration = endTime - workStartTime;</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Update work log</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const currentLog = workLogs.find(w =&gt;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>w.animatorId === currentUser.id &amp;&amp; !w.endTime</p>
-<p class="p1"><span class="Apple-converted-space">                </span>);</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (currentLog) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>currentLog.endTime = endTime.toISOString();</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>currentLog.duration = duration;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>currentLog.materials = [...materials];</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>saveToStorage();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Update animator status</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const animator = animators.find(a =&gt; a.name === currentUser.name);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (animator) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>animator.status = 'available';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>saveToStorage();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>const hours = Math.floor(duration / 3600000);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const minutes = Math.floor((duration % 3600000) / 60000);</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>showNotification('Turno Completato!', `Durata: ${hours}h ${minutes}min`);</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Reset</p>
-<p class="p1"><span class="Apple-converted-space">                </span>workStartTime = null;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>currentEventId = null;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>materials = [];</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('workTimer').textContent = '00:00:00';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('materialsList').innerHTML = '';</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Switch to history tab</p>
-<p class="p1"><span class="Apple-converted-space">                </span>loadWorkHistory();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.querySelectorAll('#animatorApp .tab').forEach(t =&gt; t.classList.remove('active'));</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.querySelectorAll('#animatorApp .section').forEach(s =&gt; s.classList.remove('active'));</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.querySelector('#animatorApp .tab:nth-child(3)').classList.add('active');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('animator-history').classList.add('active');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function openEventModal() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('eventModal').classList.add('active');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Set default date to today</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('eventDate').valueAsDate = new Date();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function openAnimatorModal() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('animatorModal').classList.add('active');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function closeModal(modalId) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById(modalId).classList.remove('active');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function saveEvent() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const event = {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>id: Date.now().toString(),</p>
-<p class="p1"><span class="Apple-converted-space">                </span>date: document.getElementById('eventDate').value,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>time: document.getElementById('eventTime').value,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>type: document.getElementById('eventType').value,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>package: document.getElementById('eventPackage').value,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>address: document.getElementById('eventAddress').value,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>animators: Array.from(document.getElementById('eventAnimators').selectedOptions).map(o =&gt; o.value),</p>
-<p class="p1"><span class="Apple-converted-space">                </span>createdAt: new Date().toISOString()</p>
-<p class="p1"><span class="Apple-converted-space">            </span>};</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (!event.date || !event.time || !event.address) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>showNotification('Errore', 'Compila tutti i campi obbligatori');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>events.push(event);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>saveToStorage();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>loadEvents();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>closeModal('eventModal');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>showNotification('Evento Creato!', 'Nuovo evento aggiunto con successo');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function saveAnimator() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const animator = {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>id: Date.now().toString(),</p>
-<p class="p1"><span class="Apple-converted-space">                </span>name: document.getElementById('animatorFullName').value,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>email: document.getElementById('animatorEmail').value,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>phone: document.getElementById('animatorPhone').value,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>role: document.getElementById('animatorRole').value,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>status: 'available'</p>
-<p class="p1"><span class="Apple-converted-space">            </span>};</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (!animator.name || !animator.email) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>showNotification('Errore', 'Nome ed email sono obbligatori');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>animators.push(animator);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>saveToStorage();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>loadTeam();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>closeModal('animatorModal');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>showNotification('Animatore Aggiunto!', `${animator.name} è stato aggiunto al team`);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function deleteEvent(eventId) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (confirm('Sei sicuro di voler eliminare questo evento?')) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>events = events.filter(e =&gt; e.id !== eventId);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>saveToStorage();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>loadEvents();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>showNotification('Evento Eliminato', 'Evento rimosso con successo');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function showNotification(title, message) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const notification = document.getElementById('notification');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('notificationTitle').textContent = title;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('notificationMessage').textContent = message;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>notification.classList.add('show');</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>setTimeout(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>notification.classList.remove('show');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}, 4000);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function formatDate(dateString) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const date = new Date(dateString);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const options = { day: 'numeric', month: 'long', year: 'numeric' };</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return date.toLocaleDateString('it-IT', options);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Close modals when clicking outside</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.querySelectorAll('.modal').forEach(modal =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>modal.addEventListener('click', function(e) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (e.target === this) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.classList.remove('active');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>});</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Auto-save every 30 seconds</p>
-<p class="p1"><span class="Apple-converted-space">        </span>setInterval(saveToStorage, 30000);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt; 'block';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else if (userType === 'animator') {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>hintText.innerHTML = '📧 mario@sorrentino.it (o nome@sorrentino.it)&lt;br&gt;🔑 123456';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>hint.style.display =</p>
+    <!-- Login Screen -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-card">
+            <div class="logo">
+                <h1>🎉 Sorrentino Show</h1>
+                <p>Agenzia di Animazione</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Tipo Accesso</label>
+                <select class="form-select" id="userType" onchange="updateLoginHint()">
+                    <option value="">Seleziona...</option>
+                    <option value="admin">Amministratore</option>
+                    <option value="animator">Animatore</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="email" placeholder="email@sorrentino.it">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="password" placeholder="Password">
+            </div>
+            
+            <button class="btn-login" onclick="login()">Accedi</button>
+            
+            <div id="loginHint" style="text-align: center; margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 8px; display: none;">
+                <small style="color: #666;"></small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin App -->
+    <div class="app-container" id="adminApp">
+        <div class="app-header">
+            <button class="logout-btn" onclick="logout()">Esci</button>
+            <div class="header-content">
+                <h1 class="header-title">🎉 Sorrentino Show</h1>
+                <div class="user-badge">Admin</div>
+            </div>
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('dashboard', 'admin')">Dashboard</div>
+                <div class="tab" onclick="switchTab('events', 'admin')">Eventi</div>
+                <div class="tab" onclick="switchTab('team', 'admin')">Team</div>
+                <div class="tab" onclick="switchTab('monitor', 'admin')">Monitor</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Dashboard -->
+            <div id="admin-dashboard" class="section active">
+                <div class="stat-card">
+                    <div class="stat-value" id="todayEvents">0</div>
+                    <div class="stat-label">Eventi Oggi</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="activeAnimators">0</div>
+                    <div class="stat-label">Animatori Attivi</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="monthHours">0h</div>
+                    <div class="stat-label">Ore Totali Mese</div>
+                </div>
+            </div>
+
+            <!-- Events -->
+            <div id="admin-events" class="section">
+                <div id="eventsList"></div>
+                <div class="empty-state" id="noEvents" style="display: none;">
+                    <div class="empty-icon">📅</div>
+                    <p>Nessun evento programmato</p>
+                    <p style="font-size: 14px;">Clicca + per aggiungere un evento</p>
+                </div>
+            </div>
+
+            <!-- Team -->
+            <div id="admin-team" class="section">
+                <button class="btn-action btn-start" onclick="openAnimatorModal()" style="margin-bottom: 20px;">
+                    ➕ Aggiungi Animatore
+                </button>
+                <div id="teamList"></div>
+            </div>
+
+            <!-- Monitor -->
+            <div id="admin-monitor" class="section">
+                <div class="stat-card">
+                    <h3 style="margin-bottom: 15px;">🔴 Attività Live</h3>
+                    <div id="liveActivities"></div>
+                </div>
+                <div class="stat-card" style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 15px;">📊 Storico Attività</h3>
+                    <div id="activityLog"></div>
+                </div>
+            </div>
+        </div>
+
+        <button class="fab" onclick="openEventModal()">+</button>
+    </div>
+
+    <!-- Animator App -->
+    <div class="app-container" id="animatorApp">
+        <div class="app-header">
+            <button class="logout-btn" onclick="logout()">Esci</button>
+            <div class="header-content">
+                <h1 class="header-title">🎉 I Miei Turni</h1>
+                <div class="user-badge" id="animatorName">Animatore</div>
+            </div>
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('turni', 'animator')">Turni</div>
+                <div class="tab" onclick="switchTab('active', 'animator')">In Corso</div>
+                <div class="tab" onclick="switchTab('history', 'animator')">Storico</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Turni -->
+            <div id="animator-turni" class="section active">
+                <div id="myEventsList"></div>
+                <div class="empty-state" id="noTurni" style="display: none;">
+                    <div class="empty-icon">📋</div>
+                    <p>Nessun turno assegnato</p>
+                </div>
+            </div>
+
+            <!-- Active -->
+            <div id="animator-active" class="section">
+                <div class="timer-display">
+                    <div>Tempo Lavorato</div>
+                    <div class="timer-time" id="workTimer">00:00:00</div>
+                </div>
+                
+                <div class="materials-section">
+                    <h3>📦 Materiali Evento</h3>
+                    <input type="text" class="form-input" id="materialCode" 
+                           placeholder="Inserisci codice materiale (es: 001)" 
+                           onkeypress="if(event.key==='Enter') addMaterial()" style="margin: 10px 0;">
+                    <div id="materialsList"></div>
+                </div>
+                
+                <button class="btn-action btn-complete" onclick="completeWork()">
+                    ✅ Completa Turno
+                </button>
+            </div>
+
+            <!-- History -->
+            <div id="animator-history" class="section">
+                <div id="workHistory"></div>
+                <div class="empty-state" id="noHistory" style="display: none;">
+                    <div class="empty-icon">📊</div>
+                    <p>Nessun turno completato</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Modal -->
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <h2 class="modal-title">📅 Nuovo Evento</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Data Evento</label>
+                <input type="date" class="form-input" id="eventDate">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Ora Inizio</label>
+                <input type="time" class="form-input" id="eventTime">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Tipo Evento</label>
+                <select class="form-select" id="eventType">
+                    <option>Compleanno Bambini</option>
+                    <option>Compleanno Adulti</option>
+                    <option>Matrimonio</option>
+                    <option>Evento Aziendale</option>
+                    <option>Festa Privata</option>
+                    <option>Evento Pubblico</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Pacchetto</label>
+                <select class="form-select" id="eventPackage">
+                    <option>Basic</option>
+                    <option>Standard</option>
+                    <option>Deluxe</option>
+                    <option>Premium</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Indirizzo</label>
+                <input type="text" class="form-input" id="eventAddress" placeholder="Via/Piazza...">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Animatori Assegnati</label>
+                <select class="form-select" id="eventAnimators" multiple style="height: 100px;">
+                    <!-- Will be populated dynamically -->
+                </select>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-modal btn-cancel" onclick="closeModal('eventModal')">Annulla</button>
+                <button class="btn-modal btn-save" onclick="saveEvent()">Salva Evento</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Animator Modal -->
+    <div class="modal" id="animatorModal">
+        <div class="modal-content">
+            <h2 class="modal-title">👤 Nuovo Animatore</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Nome Completo</label>
+                <input type="text" class="form-input" id="animatorFullName" placeholder="Nome e Cognome">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="animatorEmail" placeholder="nome@sorrentino.it">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Telefono</label>
+                <input type="tel" class="form-input" id="animatorPhone" placeholder="+39 333 1234567">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Ruolo</label>
+                <select class="form-select" id="animatorRole">
+                    <option>Animatore Junior</option>
+                    <option>Animatore Senior</option>
+                    <option>Capo Animatore</option>
+                    <option>Specialista Trucco</option>
+                    <option>Specialista Magia</option>
+                    <option>Mascotte</option>
+                </select>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-modal btn-cancel" onclick="closeModal('animatorModal')">Annulla</button>
+                <button class="btn-modal btn-save" onclick="saveAnimator()">Salva Animatore</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <span style="font-size: 24px;">🔔</span>
+        <div>
+            <div style="font-weight: 600;" id="notificationTitle">Notifica</div>
+            <div style="font-size: 14px; color: #7f8c8d;" id="notificationMessage">Messaggio</div>
+        </div>
+    </div>
+
+    <!-- Version Badge -->
+    <div class="version-badge">v1.0.0 - 2024</div>
+
+    <script>
+        // App State
+        let currentUser = null;
+        let events = [];
+        let animators = [];
+        let workLogs = [];
+        let materials = [];
+        let workTimer = null;
+        let workStartTime = null;
+        let currentEventId = null;
+
+        // Material Database
+        const materialDatabase = {
+            '001': 'Birilli colorati',
+            '002': 'Set colori e pennelli',
+            '003': 'Barattoli gioco',
+            '004': 'Pallone gonfiabile',
+            '005': 'Corda tiro alla fune',
+            '006': 'Box spugne',
+            '007': 'Cerchi colorati',
+            '008': 'Coni segnalatori',
+            '009': 'Kit trucca bimbi',
+            '010': 'Microfono e casse',
+            '011': 'Costume mascotte',
+            '012': 'Macchina bolle sapone'
+        };
+
+        // Initialize
+        window.onload = function() {
+            loadFromStorage();
+            initializeSampleData();
+        };
+
+        function loadFromStorage() {
+            events = JSON.parse(localStorage.getItem('events') || '[]');
+            animators = JSON.parse(localStorage.getItem('animators') || '[]');
+            workLogs = JSON.parse(localStorage.getItem('workLogs') || '[]');
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('events', JSON.stringify(events));
+            localStorage.setItem('animators', JSON.stringify(animators));
+            localStorage.setItem('workLogs', JSON.stringify(workLogs));
+        }
+
+        function initializeSampleData() {
+            if (animators.length === 0) {
+                animators = [
+                    { id: '1', name: 'Mario Rossi', email: 'mario@sorrentino.it', role: 'Animatore Senior', status: 'available' },
+                    { id: '2', name: 'Luigi Bianchi', email: 'luigi@sorrentino.it', role: 'Animatore Junior', status: 'available' },
+                    { id: '3', name: 'Anna Ferrari', email: 'anna@sorrentino.it', role: 'Specialista Trucco', status: 'busy' },
+                    { id: '4', name: 'Marco Verdi', email: 'marco@sorrentino.it', role: 'Capo Animatore', status: 'available' }
+                ];
+                saveToStorage();
+            }
+        }
+
+        function updateLoginHint() {
+            const userType = document.getElementById('userType').value;
+            const hint = document.getElementById('loginHint');
+            const hintText = hint.querySelector('small');
+            
+            if (userType === 'admin') {
+                hintText.innerHTML = '📧 admin@sorrentino.it<br>🔑 admin123';
+                hint.style.display = 'block';
+            } else {
+                hint.style.display = 'none';
+            }
+        }
+
+        function login() {
+            const userType = document.getElementById('userType').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!userType || !email || !password) {
+                showNotification('Errore', 'Compila tutti i campi');
+                return;
+            }
+            
+            // Simple authentication
+            if (userType === 'admin' && email === 'admin@sorrentino.it' && password === 'admin123') {
+                currentUser = { type: 'admin', email: email, name: 'Amministratore' };
+                showAdminApp();
+            } else if (userType === 'animator' && email.includes('@sorrentino.it') && password === '123456') {
+                const animator = animators.find(a => a.email === email);
+                currentUser = { 
+                    type: 'animator', 
+                    email: email, 
+                    name: animator ? animator.name : email.split('@')[0],
+                    id: animator ? animator.id : Date.now().toString()
+                };
+                showAnimatorApp();
+            } else {
+                showNotification('Errore', 'Credenziali non valide');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            if (workTimer) clearInterval(workTimer);
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('adminApp').style.display = 'none';
+            document.getElementById('animatorApp').style.display = 'none';
+        }
+
+        function showAdminApp() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminApp').style.display = 'block';
+            loadAdminDashboard();
+            loadEvents();
+            loadTeam();
+        }
+
+        function showAnimatorApp() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('animatorApp').style.display = 'block';
+            document.getElementById('animatorName').textContent = currentUser.name;
+            showNotification('Benvenuto!', 'Hai nuovi turni assegnati');
+            loadAnimatorEvents();
+            loadWorkHistory();
+        }
+
+        function switchTab(tabName, appType) {
+            const prefix = appType === 'admin' ? 'admin-' : 'animator-';
+            const app = appType === 'admin' ? 'adminApp' : 'animatorApp';
+            
+            // Remove active class from all tabs and sections
+            document.querySelectorAll(`#${app} .tab`).forEach(t => t.classList.remove('active'));
+            document.querySelectorAll(`#${app} .section`).forEach(s => s.classList.remove('active'));
+            
+            // Add active class to clicked tab and corresponding section
+            event.target.classList.add('active');
+            const section = document.getElementById(prefix + tabName);
+            if (section) section.classList.add('active');
+        }
+
+        function loadAdminDashboard() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayEvents = events.filter(e => e.date === today).length;
+            const activeAnimators = workLogs.filter(w => !w.endTime).length;
+            const monthHours = workLogs.reduce((total, log) => {
+                if (log.duration) return total + log.duration;
+                return total;
+            }, 0);
+            
+            document.getElementById('todayEvents').textContent = todayEvents;
+            document.getElementById('activeAnimators').textContent = activeAnimators;
+            document.getElementById('monthHours').textContent = Math.round(monthHours / 3600000) + 'h';
+        }
+
+        function loadEvents() {
+            const eventsList = document.getElementById('eventsList');
+            const noEvents = document.getElementById('noEvents');
+            
+            if (events.length === 0) {
+                eventsList.style.display = 'none';
+                noEvents.style.display = 'block';
+            } else {
+                eventsList.style.display = 'block';
+                noEvents.style.display = 'none';
+                
+                eventsList.innerHTML = events.map(event => `
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="event-date">${formatDate(event.date)}</div>
+                            <div class="event-type">${event.package}</div>
+                        </div>
+                        <div class="event-info">
+                            <span class="event-info-icon">🎊</span>
+                            ${event.type}
+                        </div>
+                        <div class="event-info">
+                            <span class="event-info-icon">⏰</span>
+                            ${event.time}
+                        </div>
+                        <div class="event-info">
+                            <span class="event-info-icon">📍</span>
+                            ${event.address}
+                        </div>
+                        <div class="event-info">
+                            <span class="event-info-icon">👥</span>
+                            ${event.animators ? event.animators.join(', ') : 'Nessun animatore assegnato'}
+                        </div>
+                        <button class="btn-action btn-complete" onclick="deleteEvent('${event.id}')">
+                            🗑️ Elimina
+                        </button>
+                    </div>
+                `).join('');
+            }
+            
+            // Update monitor section
+            loadMonitor();
+        }
+
+        function loadTeam() {
+            const teamList = document.getElementById('teamList');
+            
+            teamList.innerHTML = animators.map(animator => `
+                <div class="animator-item">
+                    <div>
+                        <div class="animator-name">${animator.name}</div>
+                        <div style="font-size: 12px; color: #7f8c8d;">${animator.role}</div>
+                    </div>
+                    <div class="animator-status ${animator.status === 'available' ? 'status-available' : 'status-busy'}">
+                        ${animator.status === 'available' ? 'Disponibile' : 'In Servizio'}
+                    </div>
+                </div>
+            `).join('');
+            
+            // Update event modal with animators
+            const animatorSelect = document.getElementById('eventAnimators');
+            animatorSelect.innerHTML = animators.map(a => 
+                `<option value="${a.name}">${a.name} - ${a.role}</option>`
+            ).join('');
+        }
+
+        function loadMonitor() {
+            // Live activities
+            const liveActivities = document.getElementById('liveActivities');
+            const activeWork = workLogs.filter(w => !w.endTime);
+            
+            if (activeWork.length === 0) {
+                liveActivities.innerHTML = '<p style="color: #7f8c8d;">Nessuna attività in corso</p>';
+            } else {
+                liveActivities.innerHTML = activeWork.map(work => `
+                    <div style="padding: 10px; background: #f0f0f0; border-radius: 8px; margin-bottom: 10px;">
+                        <strong>${work.animatorName}</strong> - In servizio
+                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                            Iniziato: ${new Date(work.startTime).toLocaleTimeString('it-IT')}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // Activity log
+            const activityLog = document.getElementById('activityLog');
+            const recentLogs = workLogs.slice(-5).reverse();
+            
+            if (recentLogs.length === 0) {
+                activityLog.innerHTML = '<p style="color: #7f8c8d;">Nessuna attività registrata</p>';
+            } else {
+                activityLog.innerHTML = recentLogs.map(log => `
+                    <div style="padding: 10px; border-bottom: 1px solid #e0e0e0;">
+                        <strong>${log.animatorName}</strong>
+                        <div style="font-size: 12px; color: #7f8c8d;">
+                            ${new Date(log.startTime).toLocaleString('it-IT')}
+                            ${log.endTime ? ` - Durata: ${Math.round(log.duration / 3600000)}h` : ' - In corso'}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function loadAnimatorEvents() {
+            const myEventsList = document.getElementById('myEventsList');
+            const noTurni = document.getElementById('noTurni');
+            
+            // Filter events assigned to current animator
+            const myEvents = events.filter(e => 
+                e.animators && e.animators.includes(currentUser.name)
+            );
+            
+            if (myEvents.length === 0) {
+                myEventsList.style.display = 'none';
+                noTurni.style.display = 'block';
+            } else {
+                myEventsList.style.display = 'block';
+                noTurni.style.display = 'none';
+                
+                myEventsList.innerHTML = myEvents.map(event => `
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="event-date">${formatDate(event.date)}</div>
+                            <div class="event-type">${event.package}</div>
+                        </div>
+                        <div class="event-info">
+                            <span class="event-info-icon">🎊</span>
+                            ${event.type}
+                        </div>
+                        <div class="event-info">
+                            <span class="event-info-icon">⏰</span>
+                            ${event.time}
+                        </div>
+                        <div class="event-info">
+                            <span class="event-info-icon">📍</span>
+                            ${event.address}
+                        </div>
+                        <button class="btn-action btn-start" onclick="startWork('${event.id}')">
+                            🚀 Inizia Turno
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function loadWorkHistory() {
+            const workHistory = document.getElementById('workHistory');
+            const noHistory = document.getElementById('noHistory');
+            
+            const myHistory = workLogs.filter(w => 
+                w.animatorId === currentUser.id && w.endTime
+            );
+            
+            if (myHistory.length === 0) {
+                workHistory.style.display = 'none';
+                noHistory.style.display = 'block';
+            } else {
+                workHistory.style.display = 'block';
+                noHistory.style.display = 'none';
+                
+                workHistory.innerHTML = myHistory.map(log => `
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="event-date">${formatDate(log.startTime)}</div>
+                            <div class="event-type">Completato</div>
+                        </div>
+                        <div class="event-info">
+                            <span class="event-info-icon">⏱️</span>
+                            Durata: ${Math.round(log.duration / 3600000)}h ${Math.round((log.duration % 3600000) / 60000)}min
+                        </div>
+                        <div class="event-info">
+                            <span class="event-info-icon">📦</span>
+                            Materiali: ${log.materials ? log.materials.length : 0} items
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function startWork(eventId) {
+            if (confirm('Confermi di iniziare il turno?')) {
+                currentEventId = eventId;
+                workStartTime = new Date();
+                
+                // Create work log
+                const workLog = {
+                    id: Date.now().toString(),
+                    eventId: eventId,
+                    animatorId: currentUser.id,
+                    animatorName: currentUser.name,
+                    startTime: workStartTime.toISOString(),
+                    materials: []
+                };
+                
+                workLogs.push(workLog);
+                saveToStorage();
+                
+                // Update animator status
+                const animator = animators.find(a => a.name === currentUser.name);
+                if (animator) {
+                    animator.status = 'busy';
+                    saveToStorage();
+                }
+                
+                // Start timer
+                startTimer();
+                
+                // Switch to active tab
+                document.querySelectorAll('#animatorApp .tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('#animatorApp .section').forEach(s => s.classList.remove('active'));
+                document.querySelector('#animatorApp .tab:nth-child(2)').classList.add('active');
+                document.getElementById('animator-active').classList.add('active');
+                
+                showNotification('Turno Iniziato!', 'Timer avviato. Buon lavoro!');
+            }
+        }
+
+        function startTimer() {
+            workTimer = setInterval(() => {
+                const now = new Date();
+                const diff = now - workStartTime;
+                const hours = Math.floor(diff / 3600000);
+                const minutes = Math.floor((diff % 3600000) / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+                
+                document.getElementById('workTimer').textContent = 
+                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function addMaterial() {
+            const input = document.getElementById('materialCode');
+            const code = input.value.trim();
+            
+            if (materialDatabase[code]) {
+                if (!materials.find(m => m.code === code)) {
+                    materials.push({ code, name: materialDatabase[code] });
+                    updateMaterialsList();
+                    input.value = '';
+                    showNotification('Materiale Aggiunto', materialDatabase[code]);
+                }
+            } else {
+                showNotification('Errore', 'Codice materiale non valido');
+            }
+        }
+
+        function updateMaterialsList() {
+            const list = document.getElementById('materialsList');
+            list.innerHTML = materials.map(m => `
+                <div class="material-item">
+                    <div>
+                        <span class="material-code">${m.code}</span>
+                        <span style="margin-left: 10px;">${m.name}</span>
+                    </div>
+                    <button onclick="removeMaterial('${m.code}')" style="background: none; border: none; cursor: pointer;">❌</button>
+                </div>
+            `).join('');
+        }
+
+        function removeMaterial(code) {
+            materials = materials.filter(m => m.code !== code);
+            updateMaterialsList();
+        }
+
+        function completeWork() {
+            if (!workStartTime) {
+                showNotification('Errore', 'Nessun turno attivo');
+                return;
+            }
+            
+            if (confirm('Confermi di aver completato il turno e rimesso tutto in magazzino?')) {
+                clearInterval(workTimer);
+                const endTime = new Date();
+                const duration = endTime - workStartTime;
+                
+                // Update work log
+                const currentLog = workLogs.find(w => 
+                    w.animatorId === currentUser.id && !w.endTime
+                );
+                
+                if (currentLog) {
+                    currentLog.endTime = endTime.toISOString();
+                    currentLog.duration = duration;
+                    currentLog.materials = [...materials];
+                    saveToStorage();
+                }
+                
+                // Update animator status
+                const animator = animators.find(a => a.name === currentUser.name);
+                if (animator) {
+                    animator.status = 'available';
+                    saveToStorage();
+                }
+                
+                const hours = Math.floor(duration / 3600000);
+                const minutes = Math.floor((duration % 3600000) / 60000);
+                
+                showNotification('Turno Completato!', `Durata: ${hours}h ${minutes}min`);
+                
+                // Reset
+                workStartTime = null;
+                currentEventId = null;
+                materials = [];
+                document.getElementById('workTimer').textContent = '00:00:00';
+                document.getElementById('materialsList').innerHTML = '';
+                
+                // Switch to history tab
+                loadWorkHistory();
+                document.querySelectorAll('#animatorApp .tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('#animatorApp .section').forEach(s => s.classList.remove('active'));
+                document.querySelector('#animatorApp .tab:nth-child(3)').classList.add('active');
+                document.getElementById('animator-history').classList.add('active');
+            }
+        }
+
+        function openEventModal() {
+            document.getElementById('eventModal').classList.add('active');
+            // Set default date to today
+            document.getElementById('eventDate').valueAsDate = new Date();
+        }
+
+        function openAnimatorModal() {
+            document.getElementById('animatorModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function saveEvent() {
+            const event = {
+                id: Date.now().toString(),
+                date: document.getElementById('eventDate').value,
+                time: document.getElementById('eventTime').value,
+                type: document.getElementById('eventType').value,
+                package: document.getElementById('eventPackage').value,
+                address: document.getElementById('eventAddress').value,
+                animators: Array.from(document.getElementById('eventAnimators').selectedOptions).map(o => o.value),
+                createdAt: new Date().toISOString()
+            };
+            
+            if (!event.date || !event.time || !event.address) {
+                showNotification('Errore', 'Compila tutti i campi obbligatori');
+                return;
+            }
+            
+            events.push(event);
+            saveToStorage();
+            loadEvents();
+            closeModal('eventModal');
+            showNotification('Evento Creato!', 'Nuovo evento aggiunto con successo');
+        }
+
+        function saveAnimator() {
+            const animator = {
+                id: Date.now().toString(),
+                name: document.getElementById('animatorFullName').value,
+                email: document.getElementById('animatorEmail').value,
+                phone: document.getElementById('animatorPhone').value,
+                role: document.getElementById('animatorRole').value,
+                status: 'available'
+            };
+            
+            if (!animator.name || !animator.email) {
+                showNotification('Errore', 'Nome ed email sono obbligatori');
+                return;
+            }
+            
+            animators.push(animator);
+            saveToStorage();
+            loadTeam();
+            closeModal('animatorModal');
+            showNotification('Animatore Aggiunto!', `${animator.name} è stato aggiunto al team`);
+        }
+
+        function deleteEvent(eventId) {
+            if (confirm('Sei sicuro di voler eliminare questo evento?')) {
+                events = events.filter(e => e.id !== eventId);
+                saveToStorage();
+                loadEvents();
+                showNotification('Evento Eliminato', 'Evento rimosso con successo');
+            }
+        }
+
+        function showNotification(title, message) {
+            const notification = document.getElementById('notification');
+            document.getElementById('notificationTitle').textContent = title;
+            document.getElementById('notificationMessage').textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            return date.toLocaleDateString('it-IT', options);
+        }
+
+        // Close modals when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+
+        // Auto-save every 30 seconds
+        setInterval(saveToStorage, 30000);
+    </script>
 </body>
-</html>
+</html> 'block';
+            } else if (userType === 'animator') {
+                hintText.innerHTML = '📧 mario@sorrentino.it (o nome@sorrentino.it)<br>🔑 123456';
+                hint.style.display =
