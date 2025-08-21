@@ -625,12 +625,23 @@
             
             <div class="form-group">
                 <label class="form-label">Email</label>
-                <input type="email" class="form-input" id="regEmail" placeholder="nome@sorrentino.it">
+                <input type="email" class="form-input" id="regEmail" placeholder="tuaemail@gmail.com">
             </div>
             
             <div class="form-group">
                 <label class="form-label">Telefono</label>
                 <input type="tel" class="form-input" id="regPhone" placeholder="+39 333 1234567">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Come hai conosciuto Sorrentino Show?</label>
+                <select class="form-select" id="regSource">
+                    <option>Passaparola</option>
+                    <option>Social Media</option>
+                    <option>Sito Web</option>
+                    <option>Evento</option>
+                    <option>Altro</option>
+                </select>
             </div>
             
             <div class="form-group">
@@ -658,6 +669,7 @@
             <button class="btn-secondary" onclick="showLogin()">Torna al Login</button>
             
             <div style="text-align: center; margin-top: 15px; padding: 10px; background: #e8f5e8; border-radius: 8px; font-size: 12px; color: #2d5d2d;">
+                ✅ Puoi usare qualsiasi email (Gmail, Outlook, ecc.)<br>
                 📝 Dopo la registrazione dovrai attendere l'approvazione dell'amministratore
             </div>
         </div>
@@ -967,7 +979,7 @@
                 hintText.innerHTML = '📧 admin@sorrentino.it<br>🔑 admin123';
                 hint.style.display = 'block';
             } else if (userType === 'animator') {
-                hintText.innerHTML = '📧 mario@sorrentino.it (o nome@sorrentino.it)<br>🔑 123456';
+                hintText.innerHTML = '📧 Usa la tua email di registrazione<br>🔑 La password che hai scelto';
                 hint.style.display = 'block';
             } else {
                 hint.style.display = 'none';
@@ -991,6 +1003,7 @@
             const password = document.getElementById('regPassword').value;
             const passwordConfirm = document.getElementById('regPasswordConfirm').value;
             const role = document.getElementById('regRole').value;
+            const source = document.getElementById('regSource').value;
             
             // Validation
             if (!name || !email || !phone || !password) {
@@ -1003,8 +1016,15 @@
                 return;
             }
             
-            if (!email.includes('@sorrentino.it')) {
-                showNotification('Errore', 'Usa un indirizzo email @sorrentino.it');
+            if (password.length < 6) {
+                showNotification('Errore', 'La password deve essere di almeno 6 caratteri');
+                return;
+            }
+            
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showNotification('Errore', 'Inserisci un indirizzo email valido');
                 return;
             }
             
@@ -1025,6 +1045,7 @@
                 phone: phone,
                 password: password,
                 role: role,
+                source: source,
                 status: 'pending',
                 registeredAt: new Date().toISOString()
             };
@@ -1197,7 +1218,8 @@
                             <div>
                                 <div class="animator-name">${pending.name}</div>
                                 <div style="font-size: 12px; color: #7f8c8d;">${pending.role} - ${pending.email}</div>
-                                <div style="font-size: 11px; color: #95a5a6;">Registrato: ${formatDate(pending.registeredAt.split('T')[0])}</div>
+                                <div style="font-size: 11px; color: #95a5a6;">📞 ${pending.phone}</div>
+                                <div style="font-size: 11px; color: #95a5a6;">📅 ${formatDate(pending.registeredAt.split('T')[0])} - Via: ${pending.source}</div>
                             </div>
                             <div style="display: flex; gap: 5px;">
                                 <button onclick="approveAnimator('${pending.id}')" style="background: #27ae60; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">✅</button>
