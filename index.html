@@ -505,76 +505,6 @@
             margin-top: 20px;
         }
 
-        .material-item {
-            background: white;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .material-code {
-            background: #667eea;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 5px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            display: none;
-            align-items: center;
-            gap: 10px;
-            z-index: 3000;
-            animation: slideInRight 0.3s ease;
-        }
-
-        .notification.show {
-            display: flex;
-        }
-
-        @keyframes slideInRight {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #7f8c8d;
-        }
-
-        .empty-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        .firebase-status {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 10px;
-            z-index: 100;
-        }
-
-        .firebase-status.connected {
-            background: rgba(46, 125, 50, 0.8);
-        }
-
         .material-grid-item {
             background: white;
             border: 2px solid #e0e0e0;
@@ -639,21 +569,59 @@
             align-items: center;
         }
 
-        .payment-modal {
-            display: none;
+        .notification {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 2000;
-            justify-content: center;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: none;
             align-items: center;
+            gap: 10px;
+            z-index: 3000;
+            animation: slideInRight 0.3s ease;
         }
 
-        .payment-modal.active {
+        .notification.show {
             display: flex;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .firebase-status {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 10px;
+            z-index: 100;
+        }
+
+        .firebase-status.connected {
+            background: rgba(46, 125, 50, 0.8);
+        }
+
+        .firebase-status.error {
+            background: rgba(211, 47, 47, 0.8);
         }
 
         /* Mobile optimizations */
@@ -670,7 +638,7 @@
 </head>
 <body>
     <!-- Loading Screen -->
-    <div class="loading" id="loadingScreen">
+    <div class="loading show" id="loadingScreen">
         <div style="font-size: 48px; margin-bottom: 20px;">🔥</div>
         <h2>Caricamento Firebase...</h2>
         <p>Connessione al database cloud</p>
@@ -1129,6 +1097,7 @@
         window.workTimer = null;
         window.workStartTime = null;
         window.currentEventId = null;
+        window.materialsReturned = false;
 
         // Material Database
         const materialDatabase = {
@@ -1156,8 +1125,15 @@
         function initializeAppData() {
             updateFirebaseStatus('Connessione in corso...', 'connecting');
             
+            // Timeout per evitare loading infinito
+            const timeout = setTimeout(() => {
+                updateFirebaseStatus('❌ Timeout connessione', 'error');
+                showLoginScreen();
+            }, 10000);
+            
             // Auth state listener
             onAuthStateChanged(auth, (user) => {
+                clearTimeout(timeout);
                 if (user) {
                     updateFirebaseStatus('✅ Connesso', 'connected');
                     handleAuthenticatedUser(user);
@@ -1287,16 +1263,6 @@
             }
         }
 
-        // Make functions global
-        window.initializeAppData = initializeAppData;
-        window.updateFirebaseStatus = updateFirebaseStatus;
-        window.handleAuthenticatedUser = handleAuthenticatedUser;
-        window.loadAnimatorData = loadAnimatorData;
-        window.showLoginScreen = showLoginScreen;
-        window.showAdminApp = showAdminApp;
-        window.showAnimatorApp = showAnimatorApp;
-        window.initializeSampleData = initializeSampleData;
-
         // Authentication functions
         window.login = async function() {
             const userType = document.getElementById('userType').value;
@@ -1391,7 +1357,7 @@
                     // Sign out immediately after successful registration
                     await signOut(auth);
                     
-                    showNotification('Registrazione Completata!', 'Attendi l\'approvazione dell\'amministratore');
+                    showNotification('Registrazione Completata!', 'Attendi la approvazione dell amministratore');
                     
                     // Clear form and go back to login
                     document.getElementById('regFullName').value = '';
@@ -1410,7 +1376,7 @@
                         showNotification('Errore', 'Errore nel salvare i dati. Riprova.');
                     } catch (deleteError) {
                         console.error('Error deleting user:', deleteError);
-                        showNotification('Errore', 'Errore durante la registrazione. Contatta l\'amministratore.');
+                        showNotification('Errore', 'Errore durante la registrazione. Contatta l amministratore.');
                     }
                 }
                 
@@ -1436,842 +1402,14 @@
             await signOut(auth);
         };
 
-        // Admin functions
-        async function loadAdminData() {
-            try {
-                await Promise.all([
-                    loadAdminDashboard(),
-                    loadEvents(),
-                    loadTeam(),
-                    loadMonitor()
-                ]);
-            } catch (error) {
-                console.error('Error loading admin data:', error);
-                showNotification('Errore', 'Errore nel caricamento dati');
-            }
-        }
-
-        async function loadAdminDashboard() {
-            try {
-                const today = new Date().toISOString().split('T')[0];
-                
-                // Count today's events
-                const eventsRef = collection(db, 'events');
-                const eventsSnapshot = await getDocs(eventsRef);
-                const todayEvents = eventsSnapshot.docs.filter(doc => doc.data().date === today).length;
-                
-                // Count active work sessions
-                const workLogsRef = collection(db, 'workLogs');
-                const workLogsSnapshot = await getDocs(workLogsRef);
-                const activeWork = workLogsSnapshot.docs.filter(doc => !doc.data().endTime).length;
-                
-                // Calculate monthly hours
-                const monthHours = workLogsSnapshot.docs.reduce((total, doc) => {
-                    const data = doc.data();
-                    if (data.duration) return total + data.duration;
-                    return total;
-                }, 0);
-                
-                // Count pending registrations
-                const animatorsRef = collection(db, 'animators');
-                const animatorsSnapshot = await getDocs(animatorsRef);
-                const pendingCount = animatorsSnapshot.docs.filter(doc => doc.data().status === 'pending').length;
-                
-                document.getElementById('todayEvents').textContent = todayEvents;
-                document.getElementById('activeAnimators').textContent = activeWork;
-                document.getElementById('monthHours').textContent = Math.round(monthHours / 3600000) + 'h';
-                
-                const pendingCard = document.getElementById('pendingRegistrations');
-                if (pendingCount > 0) {
-                    pendingCard.style.display = 'block';
-                    document.getElementById('pendingCount').textContent = pendingCount;
-                } else {
-                    pendingCard.style.display = 'none';
-                }
-                
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
-            }
-        }
-
-        async function loadEvents() {
-            try {
-                const eventsRef = collection(db, 'events');
-                const q = query(eventsRef, orderBy('date', 'desc'));
-                const querySnapshot = await getDocs(q);
-                
-                const eventsList = document.getElementById('eventsList');
-                const noEvents = document.getElementById('noEvents');
-                
-                if (querySnapshot.empty) {
-                    eventsList.style.display = 'none';
-                    noEvents.style.display = 'block';
-                } else {
-                    eventsList.style.display = 'block';
-                    noEvents.style.display = 'none';
-                    
-                    eventsList.innerHTML = querySnapshot.docs.map(doc => {
-                        const event = doc.data();
-                        return `
-                            <div class="event-card">
-                                <div class="event-header">
-                                    <div class="event-date">${formatDate(event.date)}</div>
-                                    <div class="event-type">${event.package}</div>
-                                </div>
-                                <div class="event-info">
-                                    <span class="event-info-icon">🎊</span>
-                                    ${event.type}
-                                </div>
-                                <div class="event-info">
-                                    <span class="event-info-icon">⏰</span>
-                                    ${event.time}
-                                </div>
-                                <div class="event-info">
-                                    <span class="event-info-icon">📍</span>
-                                    ${event.address}
-                                </div>
-                                <div class="event-info">
-                                    <span class="event-info-icon">👥</span>
-                                    ${event.animators ? event.animators.join(', ') : 'Nessun animatore assegnato'}
-                                </div>
-                                <button class="btn-action btn-complete" onclick="deleteEvent('${doc.id}')">
-                                    🗑️ Elimina
-                                </button>
-                            </div>
-                        `;
-                    }).join('');
-                }
-            } catch (error) {
-                console.error('Error loading events:', error);
-            }
-        }
-
-        async function loadTeam() {
-            try {
-                const animatorsRef = collection(db, 'animators');
-                const querySnapshot = await getDocs(animatorsRef);
-                
-                const pendingAnimators = [];
-                const approvedAnimators = [];
-                
-                querySnapshot.docs.forEach(doc => {
-                    const animator = { id: doc.id, ...doc.data() };
-                    if (animator.status === 'pending') {
-                        pendingAnimators.push(animator);
-                    } else if (animator.status === 'approved') {
-                        approvedAnimators.push(animator);
-                    }
-                });
-                
-                const teamList = document.getElementById('teamList');
-                const pendingRequests = document.getElementById('pendingRequests');
-                
-                // Load pending requests
-                if (pendingAnimators.length > 0) {
-                    pendingRequests.innerHTML = `
-                        <h3 style="margin-bottom: 15px; color: #e67e22;">⏳ Richieste in Attesa (${pendingAnimators.length})</h3>
-                        ${pendingAnimators.map(pending => `
-                            <div class="animator-item" style="border-left: 4px solid #f39c12;">
-                                <div>
-                                    <div class="animator-name">${pending.name}</div>
-                                    <div style="font-size: 12px; color: #7f8c8d;">${pending.role} - ${pending.email}</div>
-                                    <div style="font-size: 11px; color: #95a5a6;">📞 ${pending.phone}</div>
-                                    <div style="font-size: 11px; color: #95a5a6;">📅 ${formatDate(pending.registeredAt.split('T')[0])} - Via: ${pending.source}</div>
-                                </div>
-                                <div style="display: flex; gap: 5px;">
-                                    <button onclick="approveAnimator('${pending.id}')" style="background: #27ae60; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">✅</button>
-                                    <button onclick="rejectAnimator('${pending.id}')" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">❌</button>
-                                </div>
-                            </div>
-                        `).join('')}
-                        <div style="margin: 20px 0; border-bottom: 1px solid #e0e0e0;"></div>
-                    `;
-                } else {
-                    pendingRequests.innerHTML = '';
-                }
-                
-                // Load approved animators
-                teamList.innerHTML = approvedAnimators.map(animator => `
-                    <div class="animator-item">
-                        <div>
-                            <div class="animator-name">${animator.name}</div>
-                            <div style="font-size: 12px; color: #7f8c8d;">${animator.role}</div>
-                        </div>
-                        <div class="animator-status ${animator.workStatus === 'busy' ? 'status-busy' : 'status-available'}">
-                            ${animator.workStatus === 'busy' ? 'In Servizio' : 'Disponibile'}
-                        </div>
-                    </div>
-                `).join('');
-                
-                // Update event modal with animators
-                const animatorSelect = document.getElementById('eventAnimators');
-                animatorSelect.innerHTML = approvedAnimators.map(a => 
-                    `<option value="${a.name}">${a.name} - ${a.role}</option>`
-                ).join('');
-                
-            } catch (error) {
-                console.error('Error loading team:', error);
-            }
-        }
-
-        async function loadMonitor() {
-            try {
-                const workLogsRef = collection(db, 'workLogs');
-                const q = query(workLogsRef, orderBy('startTime', 'desc'));
-                const querySnapshot = await getDocs(q);
-                
-                const liveActivities = document.getElementById('liveActivities');
-                const activityLog = document.getElementById('activityLog');
-                const completedShifts = document.getElementById('completedShifts');
-                
-                const activeWork = [];
-                const recentLogs = [];
-                const completedWork = [];
-                
-                querySnapshot.docs.forEach(doc => {
-                    const work = { id: doc.id, ...doc.data() };
-                    if (!work.endTime) {
-                        activeWork.push(work);
-                    } else {
-                        recentLogs.push(work);
-                        if (!work.payment) {
-                            completedWork.push(work);
-                        }
-                    }
-                });
-                
-                // Live activities
-                if (activeWork.length === 0) {
-                    liveActivities.innerHTML = '<p style="color: #7f8c8d;">Nessuna attività in corso</p>';
-                } else {
-                    liveActivities.innerHTML = activeWork.map(work => `
-                        <div style="padding: 10px; background: #f0f0f0; border-radius: 8px; margin-bottom: 10px;">
-                            <strong>${work.animatorName}</strong> - In servizio
-                            <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
-                                Iniziato: ${new Date(work.startTime).toLocaleTimeString('it-IT')}
-                                ${work.materials ? ` - Materiali: ${work.materials.length}` : ''}
-                            </div>
-                        </div>
-                    `).join('');
-                }
-                
-                // Completed shifts without payment
-                if (completedWork.length === 0) {
-                    completedShifts.innerHTML = '<p style="color: #7f8c8d;">Tutti i pagamenti sono aggiornati</p>';
-                } else {
-                    completedShifts.innerHTML = completedWork.slice(0, 10).map(work => {
-                        const duration = work.duration;
-                        const hours = Math.round(duration / 3600000 * 10) / 10;
-                        return `
-                            <div style="padding: 12px; background: #fff3cd; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #ffc107;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        <strong>${work.animatorName}</strong>
-                                        <div style="font-size: 12px; color: #856404; margin-top: 2px;">
-                                            ${new Date(work.startTime).toLocaleDateString('it-IT')} - ${hours}h
-                                            ${work.materialsReturned ? ' ✅' : ' ⚠️ Materiali'}
-                                        </div>
-                                    </div>
-                                    <button onclick="openPaymentModal('${work.id}', '${work.animatorName}', ${duration})" 
-                                            style="background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
-                                        💰 Paga
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-                
-                // Activity log
-                const recentLogsLimited = recentLogs.slice(0, 5);
-                if (recentLogsLimited.length === 0) {
-                    activityLog.innerHTML = '<p style="color: #7f8c8d;">Nessuna attività registrata</p>';
-                } else {
-                    activityLog.innerHTML = recentLogsLimited.map(log => `
-                        <div style="padding: 10px; border-bottom: 1px solid #e0e0e0;">
-                            <strong>${log.animatorName}</strong>
-                            ${log.payment ? '<span style="color: #28a745; margin-left: 8px;">💰</span>' : ''}
-                            <div style="font-size: 12px; color: #7f8c8d;">
-                                ${new Date(log.startTime).toLocaleDateString('it-IT')}
-                                ${log.endTime ? ` - Durata: ${Math.round(log.duration / 3600000)}h` : ' - In corso'}
-                            </div>
-                        </div>
-                    `).join('');
-                }
-                
-            } catch (error) {
-                console.error('Error loading monitor:', error);
-            }
-        }
-
-        // More functions will be added here...
-        window.loadAdminData = loadAdminData;
-        window.loadAdminDashboard = loadAdminDashboard;
-        window.loadEvents = loadEvents;
-        window.loadTeam = loadTeam;
-        window.loadMonitor = loadMonitor;
-
-        // Complete admin functions
-        window.approveAnimator = async function(animatorId) {
-            try {
-                const animatorRef = doc(db, 'animators', animatorId);
-                await updateDoc(animatorRef, {
-                    status: 'approved',
-                    approvedAt: new Date().toISOString()
-                });
-                
-                showNotification('Animatore Approvato!', 'L\'animatore può ora accedere all\'app');
-                await loadTeam();
-                await loadAdminDashboard();
-            } catch (error) {
-                console.error('Error approving animator:', error);
-                showNotification('Errore', 'Errore nell\'approvazione');
-            }
-        };
-
-        window.rejectAnimator = async function(animatorId) {
-            if (!confirm('Sei sicuro di voler rifiutare questa registrazione?')) {
-                return;
-            }
-            
-            try {
-                // Get animator data before deleting
-                const animatorRef = doc(db, 'animators', animatorId);
-                const animatorDoc = await animatorRef.get();
-                
-                if (animatorDoc.exists()) {
-                    const animatorData = animatorDoc.data();
-                    
-                    // Delete from Firestore
-                    await deleteDoc(animatorRef);
-                    
-                    // Try to delete from Authentication if UID exists
-                    if (animatorData.uid) {
-                        try {
-                            // Note: Deleting users from client-side requires admin SDK
-                            // For now, we just remove from Firestore
-                            console.log('User should be manually deleted from Authentication');
-                        } catch (authError) {
-                            console.log('Could not delete from auth:', authError);
-                        }
-                    }
-                    
-                    showNotification('Registrazione Rifiutata', 'La richiesta è stata eliminata');
-                    await loadTeam();
-                    await loadAdminDashboard();
-                }
-            } catch (error) {
-                console.error('Error rejecting animator:', error);
-                showNotification('Errore', 'Errore nel rifiuto');
-            }
-        };
-
-        window.saveEvent = async function() {
-            try {
-                const event = {
-                    date: document.getElementById('eventDate').value,
-                    time: document.getElementById('eventTime').value,
-                    type: document.getElementById('eventType').value,
-                    package: document.getElementById('eventPackage').value,
-                    address: document.getElementById('eventAddress').value,
-                    animators: Array.from(document.getElementById('eventAnimators').selectedOptions).map(o => o.value),
-                    createdAt: new Date().toISOString(),
-                    createdBy: window.currentUser.email
-                };
-                
-                if (!event.date || !event.time || !event.address) {
-                    showNotification('Errore', 'Compila tutti i campi obbligatori');
-                    return;
-                }
-                
-                await addDoc(collection(db, 'events'), event);
-                
-                closeModal('eventModal');
-                showNotification('Evento Creato!', 'Nuovo evento aggiunto con successo');
-                await loadEvents();
-                await loadAdminDashboard();
-                
-            } catch (error) {
-                console.error('Error saving event:', error);
-                showNotification('Errore', 'Errore nel salvare l\'evento');
-            }
-        };
-
-        window.deleteEvent = async function(eventId) {
-            if (!confirm('Sei sicuro di voler eliminare questo evento?')) {
-                return;
-            }
-            
-            try {
-                await deleteDoc(doc(db, 'events', eventId));
-                showNotification('Evento Eliminato', 'Evento rimosso con successo');
-                await loadEvents();
-                await loadAdminDashboard();
-            } catch (error) {
-                console.error('Error deleting event:', error);
-                showNotification('Errore', 'Errore nell\'eliminazione');
-            }
-        };
-
-        window.saveAnimator = async function() {
-            try {
-                const animator = {
-                    name: document.getElementById('animatorFullName').value,
-                    email: document.getElementById('animatorEmail').value,
-                    phone: document.getElementById('animatorPhone').value,
-                    role: document.getElementById('animatorRole').value,
-                    status: 'approved',
-                    workStatus: 'available',
-                    createdAt: new Date().toISOString(),
-                    createdBy: window.currentUser.email
-                };
-                
-                if (!animator.name || !animator.email) {
-                    showNotification('Errore', 'Nome ed email sono obbligatori');
-                    return;
-                }
-                
-                await addDoc(collection(db, 'animators'), animator);
-                
-                closeModal('animatorModal');
-                showNotification('Animatore Aggiunto!', `${animator.name} è stato aggiunto al team`);
-                await loadTeam();
-                await loadAdminDashboard();
-                
-            } catch (error) {
-                console.error('Error saving animator:', error);
-                showNotification('Errore', 'Errore nel salvare l\'animatore');
-            }
-        };
-
-        // Animator functions
-        window.loadAnimatorEvents = async function() {
-            try {
-                const eventsRef = collection(db, 'events');
-                const querySnapshot = await getDocs(eventsRef);
-                
-                const myEventsList = document.getElementById('myEventsList');
-                const noTurni = document.getElementById('noTurni');
-                
-                // Filter events assigned to current animator
-                const myEvents = querySnapshot.docs.filter(doc => {
-                    const event = doc.data();
-                    return event.animators && event.animators.includes(window.currentUser.name);
-                }).map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                if (myEvents.length === 0) {
-                    myEventsList.style.display = 'none';
-                    noTurni.style.display = 'block';
-                } else {
-                    myEventsList.style.display = 'block';
-                    noTurni.style.display = 'none';
-                    
-                    myEventsList.innerHTML = myEvents.map(event => `
-                        <div class="event-card">
-                            <div class="event-header">
-                                <div class="event-date">${formatDate(event.date)}</div>
-                                <div class="event-type">${event.package}</div>
-                            </div>
-                            <div class="event-info">
-                                <span class="event-info-icon">🎊</span>
-                                ${event.type}
-                            </div>
-                            <div class="event-info">
-                                <span class="event-info-icon">⏰</span>
-                                ${event.time}
-                            </div>
-                            <div class="event-info">
-                                <span class="event-info-icon">📍</span>
-                                ${event.address}
-                            </div>
-                            <button class="btn-action btn-start" onclick="startWork('${event.id}')">
-                                🚀 Inizia Turno
-                            </button>
-                        </div>
-                    `).join('');
-                }
-            } catch (error) {
-                console.error('Error loading animator events:', error);
-                showNotification('Errore', 'Errore nel caricamento eventi');
-            }
-        };
-
-        window.loadWorkHistory = async function() {
-            try {
-                const workLogsRef = collection(db, 'workLogs');
-                const q = query(workLogsRef, 
-                    where('animatorId', '==', window.currentUser.id),
-                    orderBy('startTime', 'desc')
-                );
-                const querySnapshot = await getDocs(q);
-                
-                const workHistory = document.getElementById('workHistory');
-                const noHistory = document.getElementById('noHistory');
-                
-                if (querySnapshot.empty) {
-                    workHistory.style.display = 'none';
-                    noHistory.style.display = 'block';
-                } else {
-                    workHistory.style.display = 'block';
-                    noHistory.style.display = 'none';
-                    
-                    workHistory.innerHTML = querySnapshot.docs.map(doc => {
-                        const log = doc.data();
-                        const isCompleted = log.endTime;
-                        const duration = isCompleted ? log.duration : (new Date() - new Date(log.startTime));
-                        const hours = Math.round(duration / 3600000 * 10) / 10;
-                        const payment = log.payment || null;
-                        
-                        return `
-                            <div class="event-card" style="border-left: 4px solid ${isCompleted ? '#27ae60' : '#f39c12'};">
-                                <div class="event-header">
-                                    <div class="event-date">${formatDate(log.startTime.split('T')[0])}</div>
-                                    <div class="event-type">${isCompleted ? 'Completato' : 'In Corso'}</div>
-                                </div>
-                                <div class="event-info">
-                                    <span class="event-info-icon">⏰</span>
-                                    Inizio: ${new Date(log.startTime).toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'})}
-                                    ${isCompleted ? ` - Fine: ${new Date(log.endTime).toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'})}` : ''}
-                                </div>
-                                <div class="event-info">
-                                    <span class="event-info-icon">⏱️</span>
-                                    Durata: ${hours}h
-                                </div>
-                                <div class="event-info">
-                                    <span class="event-info-icon">📦</span>
-                                    Materiali: ${log.materials ? log.materials.length : 0} items
-                                    ${log.materialsReturned ? ' ✅' : (isCompleted ? ' ⚠️' : '')}
-                                </div>
-                                ${payment ? `
-                                    <div class="event-info" style="color: #27ae60; font-weight: 600;">
-                                        <span class="event-info-icon">💰</span>
-                                        Pagamento: €${payment.amount} ${payment.status === 'paid' ? '✅ Saldato' : '⏳ Da saldare'}
-                                    </div>
-                                ` : (isCompleted ? `
-                                    <div class="event-info" style="color: #e67e22;">
-                                        <span class="event-info-icon">💰</span>
-                                        Pagamento non ancora inserito
-                                    </div>
-                                ` : '')}
-                            </div>
-                        `;
-                    }).join('');
-                }
-            } catch (error) {
-                console.error('Error loading work history:', error);
-                // Try with simplified query if the complex one fails
-                try {
-                    const simpleQuery = query(collection(db, 'workLogs'));
-                    const snapshot = await getDocs(simpleQuery);
-                    const userLogs = snapshot.docs.filter(doc => doc.data().animatorId === window.currentUser.id);
-                    
-                    if (userLogs.length === 0) {
-                        document.getElementById('workHistory').style.display = 'none';
-                        document.getElementById('noHistory').style.display = 'block';
-                    } else {
-                        document.getElementById('workHistory').style.display = 'block';
-                        document.getElementById('noHistory').style.display = 'none';
-                        
-                        document.getElementById('workHistory').innerHTML = userLogs.map(doc => {
-                            const log = doc.data();
-                            return `
-                                <div class="event-card">
-                                    <div class="event-header">
-                                        <div class="event-date">${formatDate(log.startTime.split('T')[0])}</div>
-                                        <div class="event-type">${log.endTime ? 'Completato' : 'In Corso'}</div>
-                                    </div>
-                                    <div class="event-info">
-                                        <span class="event-info-icon">⏱️</span>
-                                        ${new Date(log.startTime).toLocaleString('it-IT')}
-                                    </div>
-                                </div>
-                            `;
-                        }).join('');
-                    }
-                } catch (simpleError) {
-                    console.error('Simplified query also failed:', simpleError);
-                    showNotification('Errore', 'Errore nel caricamento storico');
-                }
-            }
-        };
-
-        window.startWork = async function(eventId) {
-            if (!confirm('Confermi di iniziare il turno?')) {
-                return;
-            }
-            
-            try {
-                window.currentEventId = eventId;
-                window.workStartTime = new Date();
-                
-                // Create work log
-                const workLog = {
-                    eventId: eventId,
-                    animatorId: window.currentUser.id,
-                    animatorName: window.currentUser.name,
-                    startTime: window.workStartTime.toISOString(),
-                    materials: []
-                };
-                
-                await addDoc(collection(db, 'workLogs'), workLog);
-                
-                // Update animator status
-                const animatorsRef = collection(db, 'animators');
-                const q = query(animatorsRef, where('email', '==', window.currentUser.email));
-                const querySnapshot = await getDocs(q);
-                
-                if (!querySnapshot.empty) {
-                    const animatorDoc = querySnapshot.docs[0];
-                    await updateDoc(doc(db, 'animators', animatorDoc.id), {
-                        workStatus: 'busy'
-                    });
-                }
-                
-                // Start timer
-                startTimer();
-                
-                // Switch to active tab
-                document.querySelectorAll('#animatorApp .tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('#animatorApp .section').forEach(s => s.classList.remove('active'));
-                document.querySelector('#animatorApp .tab:nth-child(2)').classList.add('active');
-                document.getElementById('animator-active').classList.add('active');
-                
-                showNotification('Turno Iniziato!', 'Timer avviato. Buon lavoro!');
-                
-            } catch (error) {
-                console.error('Error starting work:', error);
-                showNotification('Errore', 'Errore nell\'avvio del turno');
-            }
-        };
-
-        window.completeWork = async function() {
-            if (!window.workStartTime) {
-                showNotification('Errore', 'Nessun turno attivo');
-                return;
-            }
-            
-            // Check if materials were selected and returned
-            if (window.materials.length > 0 && !window.materialsReturned) {
-                // Show return materials section
-                const returnSection = document.getElementById('returnMaterialsSection');
-                const returnList = document.getElementById('returnMaterialsList');
-                
-                returnList.innerHTML = window.materials.map(m => `
-                    <div class="return-material-item">
-                        <div>
-                            <span style="font-weight: 600;">${m.name}</span>
-                            <span style="margin-left: 10px; font-size: 12px; color: #7f8c8d;">Codice: ${m.code}</span>
-                        </div>
-                        <span style="color: #27ae60;">📦</span>
-                    </div>
-                `).join('');
-                
-                returnSection.style.display = 'block';
-                
-                // Disable complete button until materials are confirmed
-                const completeBtn = document.querySelector('.btn-complete');
-                completeBtn.disabled = true;
-                completeBtn.style.opacity = '0.5';
-                
-                showNotification('Conferma Materiali', 'Conferma il rientro dei materiali prima di completare');
-                return;
-            }
-            
-            if (!confirm('Confermi di aver completato il turno?')) {
-                return;
-            }
-            
-            try {
-                clearInterval(window.workTimer);
-                const endTime = new Date();
-                const duration = endTime - window.workStartTime;
-                
-                // Update work log
-                const workLogsRef = collection(db, 'workLogs');
-                const q = query(workLogsRef, 
-                    where('animatorId', '==', window.currentUser.id),
-                    where('endTime', '==', null)
-                );
-                const querySnapshot = await getDocs(q);
-                
-                if (!querySnapshot.empty) {
-                    const workLogDoc = querySnapshot.docs[0];
-                    await updateDoc(doc(db, 'workLogs', workLogDoc.id), {
-                        endTime: endTime.toISOString(),
-                        duration: duration,
-                        materials: window.materials,
-                        materialsReturned: window.materialsReturned || window.materials.length === 0
-                    });
-                }
-                
-                // Update animator status
-                const animatorsRef = collection(db, 'animators');
-                const animatorQuery = query(animatorsRef, where('email', '==', window.currentUser.email));
-                const animatorSnapshot = await getDocs(animatorQuery);
-                
-                if (!animatorSnapshot.empty) {
-                    const animatorDoc = animatorSnapshot.docs[0];
-                    await updateDoc(doc(db, 'animators', animatorDoc.id), {
-                        workStatus: 'available'
-                    });
-                }
-                
-                const hours = Math.floor(duration / 3600000);
-                const minutes = Math.floor((duration % 3600000) / 60000);
-                
-                showNotification('Turno Completato!', `Durata: ${hours}h ${minutes}min`);
-                
-                // Reset everything
-                window.workStartTime = null;
-                window.currentEventId = null;
-                window.materials = [];
-                window.materialsReturned = false;
-                document.getElementById('workTimer').textContent = '00:00:00';
-                document.getElementById('selectedMaterialsList').innerHTML = '';
-                document.getElementById('returnMaterialsSection').style.display = 'none';
-                
-                // Reset material selection grid
-                document.querySelectorAll('.material-grid-item').forEach(item => {
-                    item.classList.remove('selected');
-                });
-                
-                // Switch to history tab
-                await loadWorkHistory();
-                document.querySelectorAll('#animatorApp .tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('#animatorApp .section').forEach(s => s.classList.remove('active'));
-                document.querySelector('#animatorApp .tab:nth-child(3)').classList.add('active');
-                document.getElementById('animator-history').classList.add('active');
-                
-            } catch (error) {
-                console.error('Error completing work:', error);
-                showNotification('Errore', 'Errore nel completare il turno');
-            }
-        };
-
-        // Initialize selected materials list when work starts
-        window.startWork = async function(eventId) {
-            if (!confirm('Confermi di iniziare il turno?')) {
-                return;
-            }
-            
-            try {
-                window.currentEventId = eventId;
-                window.workStartTime = new Date();
-                window.materials = [];
-                window.materialsReturned = false;
-                
-                // Create work log
-                const workLog = {
-                    eventId: eventId,
-                    animatorId: window.currentUser.id,
-                    animatorName: window.currentUser.name,
-                    startTime: window.workStartTime.toISOString(),
-                    materials: []
-                };
-                
-                await addDoc(collection(db, 'workLogs'), workLog);
-                
-                // Update animator status
-                const animatorsRef = collection(db, 'animators');
-                const q = query(animatorsRef, where('email', '==', window.currentUser.email));
-                const querySnapshot = await getDocs(q);
-                
-                if (!querySnapshot.empty) {
-                    const animatorDoc = querySnapshot.docs[0];
-                    await updateDoc(doc(db, 'animators', animatorDoc.id), {
-                        workStatus: 'busy'
-                    });
-                }
-                
-                // Start timer
-                startTimer();
-                
-                // Initialize materials list
-                updateSelectedMaterialsList();
-                
-                // Reset all material selections
-                document.querySelectorAll('.material-grid-item').forEach(item => {
-                    item.classList.remove('selected');
-                });
-                
-                // Hide return section
-                document.getElementById('returnMaterialsSection').style.display = 'none';
-                
-                // Switch to active tab
-                document.querySelectorAll('#animatorApp .tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('#animatorApp .section').forEach(s => s.classList.remove('active'));
-                document.querySelector('#animatorApp .tab:nth-child(2)').classList.add('active');
-                document.getElementById('animator-active').classList.add('active');
-                
-                showNotification('Turno Iniziato!', 'Timer avviato. Buon lavoro!');
-                
-            } catch (error) {
-                console.error('Error starting work:', error);
-                showNotification('Errore', 'Errore nell\'avvio del turno');
-            }
-        }; '==', window.currentUser.id),
-                    where('endTime', '==', null)
-                );
-                const querySnapshot = await getDocs(q);
-                
-                if (!querySnapshot.empty) {
-                    const workLogDoc = querySnapshot.docs[0];
-                    await updateDoc(doc(db, 'workLogs', workLogDoc.id), {
-                        endTime: endTime.toISOString(),
-                        duration: duration,
-                        materials: window.materials
-                    });
-                }
-                
-                // Update animator status
-                const animatorsRef = collection(db, 'animators');
-                const animatorQuery = query(animatorsRef, where('email', '==', window.currentUser.email));
-                const animatorSnapshot = await getDocs(animatorQuery);
-                
-                if (!animatorSnapshot.empty) {
-                    const animatorDoc = animatorSnapshot.docs[0];
-                    await updateDoc(doc(db, 'animators', animatorDoc.id), {
-                        workStatus: 'available'
-                    });
-                }
-                
-                const hours = Math.floor(duration / 3600000);
-                const minutes = Math.floor((duration % 3600000) / 60000);
-                
-                showNotification('Turno Completato!', `Durata: ${hours}h ${minutes}min`);
-                
-                // Reset
-                window.workStartTime = null;
-                window.currentEventId = null;
-                window.materials = [];
-                document.getElementById('workTimer').textContent = '00:00:00';
-                document.getElementById('materialsList').innerHTML = '';
-                
-                // Switch to history tab
-                await loadWorkHistory();
-                document.querySelectorAll('#animatorApp .tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('#animatorApp .section').forEach(s => s.classList.remove('active'));
-                document.querySelector('#animatorApp .tab:nth-child(3)').classList.add('active');
-                document.getElementById('animator-history').classList.add('active');
-                
-            } catch (error) {
-                console.error('Error completing work:', error);
-                showNotification('Errore', 'Errore nel completare il turno');
-            }
-        };
-
-        function startTimer() {
-            window.workTimer = setInterval(() => {
-                const now = new Date();
-                const diff = now - window.workStartTime;
-                const hours = Math.floor(diff / 3600000);
-                const minutes = Math.floor((diff % 3600000) / 60000);
-                const seconds = Math.floor((diff % 60000) / 1000);
-                
-                document.getElementById('workTimer').textContent = 
-                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            }, 1000);
-        }
+        // Make functions global
+        window.updateFirebaseStatus = updateFirebaseStatus;
+        window.handleAuthenticatedUser = handleAuthenticatedUser;
+        window.loadAnimatorData = loadAnimatorData;
+        window.showLoginScreen = showLoginScreen;
+        window.showAdminApp = showAdminApp;
+        window.showAnimatorApp = showAnimatorApp;
+        window.initializeSampleData = initializeSampleData;
 
     </script>
 
@@ -2353,17 +1491,17 @@
             if (!materialData) return;
             
             const existingIndex = window.materials.findIndex(m => m.code === code);
-            const gridItem = document.querySelector(`.material-grid-item[onclick="toggleMaterial('${code}')"]`);
+            const gridItem = document.querySelector(`[onclick="toggleMaterial('${code}')"]`);
             
             if (existingIndex >= 0) {
                 // Remove material
                 window.materials.splice(existingIndex, 1);
-                gridItem.classList.remove('selected');
+                if (gridItem) gridItem.classList.remove('selected');
                 showNotification('Materiale Rimosso', materialData);
             } else {
                 // Add material
                 window.materials.push({ code, name: materialData });
-                gridItem.classList.add('selected');
+                if (gridItem) gridItem.classList.add('selected');
                 showNotification('Materiale Aggiunto', materialData);
             }
             
@@ -2372,6 +1510,8 @@
 
         function updateSelectedMaterialsList() {
             const list = document.getElementById('selectedMaterialsList');
+            if (!list) return;
+            
             if (window.materials.length === 0) {
                 list.innerHTML = '<p style="color: #7f8c8d; text-align: center; font-style: italic;">Nessun materiale selezionato</p>';
             } else {
@@ -2393,101 +1533,43 @@
         window.confirmMaterialsReturn = function() {
             if (confirm('Confermi che tutti i materiali sono stati rimessi in magazzino?')) {
                 window.materialsReturned = true;
-                document.getElementById('returnMaterialsSection').style.display = 'none';
+                const returnSection = document.getElementById('returnMaterialsSection');
+                if (returnSection) returnSection.style.display = 'none';
                 showNotification('Materiali Confermati', 'Rientro materiali registrato');
                 
                 // Enable complete work button
                 const completeBtn = document.querySelector('.btn-complete');
-                completeBtn.disabled = false;
-                completeBtn.style.opacity = '1';
-            }
-        };
-
-        // Payment management for admin
-        window.openPaymentModal = function(workLogId, animatorName, duration) {
-            const modal = document.createElement('div');
-            modal.className = 'payment-modal active';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <h2 class="modal-title">💰 Inserisci Pagamento</h2>
-                    <p><strong>Animatore:</strong> ${animatorName}</p>
-                    <p><strong>Durata turno:</strong> ${Math.round(duration / 3600000 * 10) / 10}h</p>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Importo (€)</label>
-                        <input type="number" class="form-input" id="paymentAmount" placeholder="0.00" step="0.01">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Tipo Pagamento</label>
-                        <select class="form-select" id="paymentType">
-                            <option>Orario fisso</option>
-                            <option>A forfait</option>
-                            <option>Bonus</option>
-                            <option>Straordinario</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Note</label>
-                        <textarea class="form-input" id="paymentNotes" placeholder="Note opzionali..." rows="3"></textarea>
-                    </div>
-                    
-                    <div class="modal-buttons">
-                        <button class="btn-modal btn-cancel" onclick="closePaymentModal()">Annulla</button>
-                        <button class="btn-modal btn-save" onclick="savePayment('${workLogId}')">💰 Inserisci Pagamento</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        };
-
-        window.closePaymentModal = function() {
-            const modal = document.querySelector('.payment-modal');
-            if (modal) {
-                modal.remove();
-            }
-        };
-
-        window.savePayment = async function(workLogId) {
-            try {
-                const amount = parseFloat(document.getElementById('paymentAmount').value);
-                const type = document.getElementById('paymentType').value;
-                const notes = document.getElementById('paymentNotes').value;
-                
-                if (!amount || amount <= 0) {
-                    showNotification('Errore', 'Inserisci un importo valido');
-                    return;
+                if (completeBtn) {
+                    completeBtn.disabled = false;
+                    completeBtn.style.opacity = '1';
                 }
-                
-                const payment = {
-                    amount: amount,
-                    type: type,
-                    notes: notes,
-                    status: 'pending',
-                    createdAt: new Date().toISOString(),
-                    createdBy: window.currentUser.email
-                };
-                
-                // Update work log with payment
-                const workLogRef = doc(db, 'workLogs', workLogId);
-                await updateDoc(workLogRef, { payment: payment });
-                
-                // Also add to payments collection for easier tracking
-                await addDoc(collection(db, 'payments'), {
-                    workLogId: workLogId,
-                    ...payment
-                });
-                
-                showNotification('Pagamento Inserito!', `€${amount} aggiunto al turno`);
-                closePaymentModal();
-                await loadMonitor(); // Refresh the monitor view
-                
-            } catch (error) {
-                console.error('Error saving payment:', error);
-                showNotification('Errore', 'Errore nel salvare il pagamento');
             }
         };
+
+        // Placeholder functions for now
+        function loadAdminData() {
+            console.log('Loading admin data...');
+        }
+
+        function loadAnimatorEvents() {
+            console.log('Loading animator events...');
+        }
+
+        function loadWorkHistory() {
+            console.log('Loading work history...');
+        }
+
+        function completeWork() {
+            console.log('Complete work...');
+        }
+
+        function saveEvent() {
+            console.log('Save event...');
+        }
+
+        function saveAnimator() {
+            console.log('Save animator...');
+        }
 
         // Close modals when clicking outside
         document.addEventListener('DOMContentLoaded', function() {
@@ -2499,9 +1581,6 @@
                 });
             });
         });
-
-        // Show loading screen initially
-        document.getElementById('loadingScreen').classList.add('show');
     </script>
 </body>
 </html>
