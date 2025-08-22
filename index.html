@@ -909,9 +909,14 @@
             <div id="admin-warehouse" class="section">
                 <div class="stat-card">
                     <h3 style="margin-bottom: 15px;">📦 Gestione Magazzino</h3>
-                    <button class="btn-action btn-start" onclick="openMaterialModal()" style="margin-bottom: 20px;">
-                        ➕ Aggiungi Materiale
-                    </button>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn-action btn-start" onclick="openMaterialModal()">
+                            ➕ Aggiungi Materiale
+                        </button>
+                        <button class="btn-action btn-materials" onclick="initializeDefaultMaterials()" style="background: #f39c12;">
+                            🔄 Inizializza Materiali
+                        </button>
+                    </div>
                     <div id="warehouseList"></div>
                 </div>
                 
@@ -1720,23 +1725,39 @@
 
         async function initializeDefaultMaterials() {
             try {
+                showNotification('Inizializzazione...', 'Aggiunta materiali di default');
+                
                 for (const [code, data] of Object.entries(defaultMaterials)) {
-                    await addDoc(collection(db, 'warehouse'), {
-                        code: code,
-                        name: data.name,
-                        icon: data.icon,
-                        category: data.category,
-                        quantity: data.quantity,
-                        notes: '',
-                        createdAt: new Date().toISOString()
-                    });
+                    // Check if already exists
+                    const existing = window.warehouseMaterials.find(m => m.code === code);
+                    if (!existing) {
+                        await addDoc(collection(db, 'warehouse'), {
+                            code: code,
+                            name: data.name,
+                            icon: data.icon,
+                            category: data.category,
+                            quantity: data.quantity,
+                            hasNumbers: data.hasNumbers || false,
+                            numbers: data.numbers || [],
+                            notes: '',
+                            createdAt: new Date().toISOString(),
+                            createdBy: 'system'
+                        });
+                    }
                 }
+                
                 // Reload after initialization
                 await loadWarehouseMaterials();
+                showNotification('Completato!', 'Materiali inizializzati con successo');
+                
             } catch (error) {
                 console.error('Error initializing materials:', error);
+                showNotification('Errore', 'Errore nell\'inizializzazione: ' + error.message);
             }
         }
+
+        // Make it global
+        window.initializeDefaultMaterials = initializeDefaultMaterials;
 
         function updateMaterialDatabase() {
             const newDatabase = {};
@@ -1807,9 +1828,9 @@
                 const code = document.getElementById('materialCodeInput').value.trim();
                 const name = document.getElementById('materialNameInput').value.trim();
                 const icon = document.getElementById('materialIconInput').value.trim();
-                const quantity = parseInt(document.getElementById('materialQuantityInput').value);
                 const category = document.getElementById('materialCategoryInput').value;
                 const notes = document.getElementById('materialNotesInput').value.trim();
+                const hasNumbers = document.getElementById('materialHasNumbers').value === 'true';
                 
                 if (!code || !name || !icon) {
                     showNotification('Errore', 'Compila codice, nome e icona');
@@ -1823,16 +1844,32 @@
                     return;
                 }
                 
-                await addDoc(collection(db, 'warehouse'), {
+                let materialData = {
                     code: code,
                     name: name,
                     icon: icon,
-                    quantity: quantity,
                     category: category,
                     notes: notes,
+                    hasNumbers: hasNumbers,
                     createdAt: new Date().toISOString(),
                     createdBy: window.currentUser.email
-                });
+                };
+                
+                if (hasNumbers) {
+                    const numbersText = document.getElementById('materialNumbersInput').value.trim();
+                    if (!numbersText) {
+                        showNotification('Errore', 'Inserisci i numeri di inventario');
+                        return;
+                    }
+                    const numbers = numbersText.split(',').map(n => n.trim()).filter(n => n);
+                    materialData.numbers = numbers;
+                    materialData.quantity = numbers.length;
+                } else {
+                    materialData.quantity = 1;
+                    materialData.numbers = [];
+                }
+                
+                await addDoc(collection(db, 'warehouse'), materialData);
                 
                 showNotification('Materiale Aggiunto!', `${name} aggiunto al magazzino`);
                 closeModal('materialModal');
@@ -1841,8 +1878,10 @@
                 document.getElementById('materialCodeInput').value = '';
                 document.getElementById('materialNameInput').value = '';
                 document.getElementById('materialIconInput').value = '';
-                document.getElementById('materialQuantityInput').value = '1';
                 document.getElementById('materialNotesInput').value = '';
+                document.getElementById('materialHasNumbers').value = 'false';
+                document.getElementById('materialNumbersInput').value = '';
+                toggleNumbersInput();
                 
                 await loadWarehouseMaterials();
                 
