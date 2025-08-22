@@ -115,6 +115,12 @@
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
         }
 
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .btn-secondary {
             width: 100%;
             padding: 14px;
@@ -131,6 +137,17 @@
 
         .btn-secondary:hover {
             background: #d0d0d0;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .loading.show {
+            display: block;
         }
 
         .app-container {
@@ -542,6 +559,26 @@
             margin-bottom: 15px;
         }
 
+        .firebase-status {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 10px;
+            z-index: 100;
+        }
+
+        .firebase-status.connected {
+            background: rgba(46, 125, 50, 0.8);
+        }
+
+        .firebase-status.error {
+            background: rgba(211, 47, 47, 0.8);
+        }
+
         /* Mobile optimizations */
         @media (max-width: 768px) {
             .app-container {
@@ -552,28 +589,22 @@
                 width: 95%;
             }
         }
-
-        /* Version indicator */
-        .version-badge {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.5);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 10px;
-            z-index: 100;
-        }
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div class="loading" id="loadingScreen">
+        <div style="font-size: 48px; margin-bottom: 20px;">🔥</div>
+        <h2>Caricamento Firebase...</h2>
+        <p>Connessione al database cloud</p>
+    </div>
+
     <!-- Login Screen -->
-    <div class="login-container" id="loginScreen">
+    <div class="login-container" id="loginScreen" style="display: none;">
         <div class="login-card">
             <div class="logo">
                 <h1>🎉 Sorrentino Show</h1>
-                <p>Agenzia di Animazione</p>
+                <p>Agenzia di Animazione - Cloud Edition</p>
             </div>
             
             <div class="form-group">
@@ -587,7 +618,7 @@
             
             <div class="form-group">
                 <label class="form-label">Email</label>
-                <input type="email" class="form-input" id="email" placeholder="email@sorrentino.it">
+                <input type="email" class="form-input" id="email" placeholder="email@esempio.com">
             </div>
             
             <div class="form-group">
@@ -595,7 +626,7 @@
                 <input type="password" class="form-input" id="password" placeholder="Password">
             </div>
             
-            <button class="btn-login" onclick="login()">Accedi</button>
+            <button class="btn-login" onclick="login()" id="loginBtn">Accedi</button>
             
             <div id="loginHint" style="text-align: center; margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 8px; display: none;">
                 <small style="color: #666;"></small>
@@ -615,7 +646,7 @@
         <div class="login-card">
             <div class="logo">
                 <h1>👤 Registrazione</h1>
-                <p>Nuovo Animatore</p>
+                <p>Nuovo Animatore - Database Cloud</p>
             </div>
             
             <div class="form-group">
@@ -665,11 +696,12 @@
                 </select>
             </div>
             
-            <button class="btn-login" onclick="registerAnimator()">Registrati</button>
+            <button class="btn-login" onclick="registerAnimator()" id="registerBtn">Registrati</button>
             <button class="btn-secondary" onclick="showLogin()">Torna al Login</button>
             
             <div style="text-align: center; margin-top: 15px; padding: 10px; background: #e8f5e8; border-radius: 8px; font-size: 12px; color: #2d5d2d;">
                 ✅ Puoi usare qualsiasi email (Gmail, Outlook, ecc.)<br>
+                🔥 Dati salvati nel cloud Firebase<br>
                 📝 Dopo la registrazione dovrai attendere l'approvazione dell'amministratore
             </div>
         </div>
@@ -695,15 +727,15 @@
             <!-- Dashboard -->
             <div id="admin-dashboard" class="section active">
                 <div class="stat-card">
-                    <div class="stat-value" id="todayEvents">0</div>
+                    <div class="stat-value" id="todayEvents">-</div>
                     <div class="stat-label">Eventi Oggi</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="activeAnimators">0</div>
+                    <div class="stat-value" id="activeAnimators">-</div>
                     <div class="stat-label">Animatori Attivi</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="monthHours">0h</div>
+                    <div class="stat-value" id="monthHours">-h</div>
                     <div class="stat-label">Ore Totali Mese</div>
                 </div>
                 <div class="stat-card" id="pendingRegistrations" style="display: none;">
@@ -871,7 +903,7 @@
             
             <div class="form-group">
                 <label class="form-label">Email</label>
-                <input type="email" class="form-input" id="animatorEmail" placeholder="nome@sorrentino.it">
+                <input type="email" class="form-input" id="animatorEmail" placeholder="nome@esempio.com">
             </div>
             
             <div class="form-group">
@@ -907,20 +939,40 @@
         </div>
     </div>
 
-    <!-- Version Badge -->
-    <div class="version-badge">v1.1.0 - 2024</div>
+    <!-- Firebase Status -->
+    <div class="firebase-status" id="firebaseStatus">🔥 Connessione Firebase...</div>
 
-    <script>
-        // App State
-        let currentUser = null;
-        let events = [];
-        let animators = [];
-        let pendingAnimators = [];
-        let workLogs = [];
-        let materials = [];
-        let workTimer = null;
-        let workStartTime = null;
-        let currentEventId = null;
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDSG_YYQdxWM_OXbCZNBuNKzCEV6P5vZtQ",
+            authDomain: "sorrentino-turni.firebaseapp.com",
+            projectId: "sorrentino-turni",
+            storageBucket: "sorrentino-turni.firebasestorage.app",
+            messagingSenderId: "265460676714",
+            appId: "1:265460676714:web:d88b4db67d2f95ae653213",
+            measurementId: "G-QDWCVYXVR2"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Global variables
+        window.db = db;
+        window.auth = auth;
+        window.currentUser = null;
+        window.materials = [];
+        window.workTimer = null;
+        window.workStartTime = null;
+        window.currentEventId = null;
 
         // Material Database
         const materialDatabase = {
@@ -938,38 +990,508 @@
             '012': 'Macchina bolle sapone'
         };
 
-        // Initialize
+        window.materialDatabase = materialDatabase;
+
+        // Initialize app
         window.onload = function() {
-            loadFromStorage();
-            initializeSampleData();
+            initializeAppData();
         };
 
-        function loadFromStorage() {
-            events = JSON.parse(localStorage.getItem('events') || '[]');
-            animators = JSON.parse(localStorage.getItem('animators') || '[]');
-            pendingAnimators = JSON.parse(localStorage.getItem('pendingAnimators') || '[]');
-            workLogs = JSON.parse(localStorage.getItem('workLogs') || '[]');
+        function initializeAppData() {
+            updateFirebaseStatus('Connessione in corso...', 'connecting');
+            
+            // Auth state listener
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    updateFirebaseStatus('✅ Connesso', 'connected');
+                    handleAuthenticatedUser(user);
+                } else {
+                    updateFirebaseStatus('🔐 Non autenticato', 'error');
+                    showLoginScreen();
+                }
+            });
+
+            // Initialize sample data if needed
+            setTimeout(initializeSampleData, 2000);
         }
 
-        function saveToStorage() {
-            localStorage.setItem('events', JSON.stringify(events));
-            localStorage.setItem('animators', JSON.stringify(animators));
-            localStorage.setItem('pendingAnimators', JSON.stringify(pendingAnimators));
-            localStorage.setItem('workLogs', JSON.stringify(workLogs));
+        function updateFirebaseStatus(message, status = '') {
+            const statusEl = document.getElementById('firebaseStatus');
+            statusEl.textContent = message;
+            statusEl.className = `firebase-status ${status}`;
         }
 
-        function initializeSampleData() {
-            if (animators.length === 0) {
-                animators = [
-                    { id: '1', name: 'Mario Rossi', email: 'mario@sorrentino.it', role: 'Animatore Senior', status: 'available', password: '123456' },
-                    { id: '2', name: 'Luigi Bianchi', email: 'luigi@sorrentino.it', role: 'Animatore Junior', status: 'available', password: '123456' },
-                    { id: '3', name: 'Anna Ferrari', email: 'anna@sorrentino.it', role: 'Specialista Trucco', status: 'busy', password: '123456' },
-                    { id: '4', name: 'Marco Verdi', email: 'marco@sorrentino.it', role: 'Capo Animatore', status: 'available', password: '123456' }
-                ];
-                saveToStorage();
+        function handleAuthenticatedUser(user) {
+            if (user.email === 'admin@sorrentino.it') {
+                window.currentUser = { type: 'admin', email: user.email, name: 'Amministratore', uid: user.uid };
+                showAdminApp();
+            } else {
+                // Load animator data from Firestore
+                loadAnimatorData(user);
             }
         }
 
+        async function loadAnimatorData(user) {
+            try {
+                const animatorsRef = collection(db, 'animators');
+                const q = query(animatorsRef, where('email', '==', user.email));
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    const animatorDoc = querySnapshot.docs[0];
+                    const animatorData = animatorDoc.data();
+                    
+                    if (animatorData.status === 'approved') {
+                        window.currentUser = {
+                            type: 'animator',
+                            email: user.email,
+                            name: animatorData.name,
+                            uid: user.uid,
+                            id: animatorDoc.id
+                        };
+                        showAnimatorApp();
+                    } else {
+                        showNotification('Account in Attesa', 'Il tuo account è in attesa di approvazione');
+                        await signOut(auth);
+                    }
+                } else {
+                    showNotification('Errore', 'Animatore non trovato');
+                    await signOut(auth);
+                }
+            } catch (error) {
+                console.error('Error loading animator:', error);
+                showNotification('Errore', 'Errore nel caricamento dati');
+                await signOut(auth);
+            }
+        }
+
+        function showLoginScreen() {
+            document.getElementById('loadingScreen').classList.remove('show');
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('adminApp').style.display = 'none';
+            document.getElementById('animatorApp').style.display = 'none';
+        }
+
+        function showAdminApp() {
+            document.getElementById('loadingScreen').classList.remove('show');
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminApp').style.display = 'block';
+            document.getElementById('animatorApp').style.display = 'none';
+            loadAdminData();
+        }
+
+        function showAnimatorApp() {
+            document.getElementById('loadingScreen').classList.remove('show');
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminApp').style.display = 'none';
+            document.getElementById('animatorApp').style.display = 'block';
+            document.getElementById('animatorName').textContent = window.currentUser.name;
+            loadAnimatorEvents();
+            loadWorkHistory();
+        }
+
+        async function initializeSampleData() {
+            try {
+                // Check if admin exists
+                const adminExists = await checkAdminExists();
+                if (!adminExists) {
+                    await createAdminAccount();
+                }
+            } catch (error) {
+                console.log('Sample data initialization:', error);
+            }
+        }
+
+        async function checkAdminExists() {
+            try {
+                const adminRef = collection(db, 'admins');
+                const querySnapshot = await getDocs(adminRef);
+                return !querySnapshot.empty;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function createAdminAccount() {
+            try {
+                // Create admin auth account
+                const userCredential = await createUserWithEmailAndPassword(auth, 'admin@sorrentino.it', 'admin123');
+                await signOut(auth); // Sign out immediately
+                
+                // Add admin to Firestore
+                await addDoc(collection(db, 'admins'), {
+                    email: 'admin@sorrentino.it',
+                    name: 'Amministratore',
+                    createdAt: new Date().toISOString()
+                });
+                
+                console.log('Admin account created');
+            } catch (error) {
+                console.log('Admin account might already exist:', error);
+            }
+        }
+
+        // Make functions global
+        window.initializeAppData = initializeAppData;
+        window.updateFirebaseStatus = updateFirebaseStatus;
+        window.handleAuthenticatedUser = handleAuthenticatedUser;
+        window.loadAnimatorData = loadAnimatorData;
+        window.showLoginScreen = showLoginScreen;
+        window.showAdminApp = showAdminApp;
+        window.showAnimatorApp = showAnimatorApp;
+        window.initializeSampleData = initializeSampleData;
+
+        // Authentication functions
+        window.login = async function() {
+            const userType = document.getElementById('userType').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!userType || !email || !password) {
+                showNotification('Errore', 'Compila tutti i campi');
+                return;
+            }
+            
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Accesso...';
+            
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // onAuthStateChanged will handle the rest
+            } catch (error) {
+                console.error('Login error:', error);
+                showNotification('Errore', 'Credenziali non valide');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Accedi';
+            }
+        };
+
+        window.registerAnimator = async function() {
+            const name = document.getElementById('regFullName').value;
+            const email = document.getElementById('regEmail').value;
+            const phone = document.getElementById('regPhone').value;
+            const password = document.getElementById('regPassword').value;
+            const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+            const role = document.getElementById('regRole').value;
+            const source = document.getElementById('regSource').value;
+            
+            // Validation
+            if (!name || !email || !phone || !password) {
+                showNotification('Errore', 'Compila tutti i campi obbligatori');
+                return;
+            }
+            
+            if (password !== passwordConfirm) {
+                showNotification('Errore', 'Le password non coincidono');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showNotification('Errore', 'La password deve essere di almeno 6 caratteri');
+                return;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showNotification('Errore', 'Inserisci un indirizzo email valido');
+                return;
+            }
+            
+            const registerBtn = document.getElementById('registerBtn');
+            registerBtn.disabled = true;
+            registerBtn.textContent = 'Registrazione...';
+            
+            try {
+                // Create user account
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await signOut(auth); // Sign out immediately
+                
+                // Add to pending animators
+                await addDoc(collection(db, 'animators'), {
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    role: role,
+                    source: source,
+                    status: 'pending',
+                    uid: userCredential.user.uid,
+                    registeredAt: new Date().toISOString()
+                });
+                
+                showNotification('Registrazione Completata!', 'Attendi l\'approvazione dell\'amministratore');
+                
+                // Clear form and go back to login
+                document.getElementById('regFullName').value = '';
+                document.getElementById('regEmail').value = '';
+                document.getElementById('regPhone').value = '';
+                document.getElementById('regPassword').value = '';
+                document.getElementById('regPasswordConfirm').value = '';
+                
+                setTimeout(() => showLogin(), 2000);
+                
+            } catch (error) {
+                console.error('Registration error:', error);
+                if (error.code === 'auth/email-already-in-use') {
+                    showNotification('Errore', 'Email già registrata');
+                } else {
+                    showNotification('Errore', 'Errore durante la registrazione');
+                }
+                registerBtn.disabled = false;
+                registerBtn.textContent = 'Registrati';
+            }
+        };
+
+        window.logout = async function() {
+            if (window.workTimer) clearInterval(window.workTimer);
+            await signOut(auth);
+        };
+
+        // Admin functions
+        async function loadAdminData() {
+            try {
+                await Promise.all([
+                    loadAdminDashboard(),
+                    loadEvents(),
+                    loadTeam(),
+                    loadMonitor()
+                ]);
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                showNotification('Errore', 'Errore nel caricamento dati');
+            }
+        }
+
+        async function loadAdminDashboard() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                
+                // Count today's events
+                const eventsRef = collection(db, 'events');
+                const eventsSnapshot = await getDocs(eventsRef);
+                const todayEvents = eventsSnapshot.docs.filter(doc => doc.data().date === today).length;
+                
+                // Count active work sessions
+                const workLogsRef = collection(db, 'workLogs');
+                const workLogsSnapshot = await getDocs(workLogsRef);
+                const activeWork = workLogsSnapshot.docs.filter(doc => !doc.data().endTime).length;
+                
+                // Calculate monthly hours
+                const monthHours = workLogsSnapshot.docs.reduce((total, doc) => {
+                    const data = doc.data();
+                    if (data.duration) return total + data.duration;
+                    return total;
+                }, 0);
+                
+                // Count pending registrations
+                const animatorsRef = collection(db, 'animators');
+                const animatorsSnapshot = await getDocs(animatorsRef);
+                const pendingCount = animatorsSnapshot.docs.filter(doc => doc.data().status === 'pending').length;
+                
+                document.getElementById('todayEvents').textContent = todayEvents;
+                document.getElementById('activeAnimators').textContent = activeWork;
+                document.getElementById('monthHours').textContent = Math.round(monthHours / 3600000) + 'h';
+                
+                const pendingCard = document.getElementById('pendingRegistrations');
+                if (pendingCount > 0) {
+                    pendingCard.style.display = 'block';
+                    document.getElementById('pendingCount').textContent = pendingCount;
+                } else {
+                    pendingCard.style.display = 'none';
+                }
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        async function loadEvents() {
+            try {
+                const eventsRef = collection(db, 'events');
+                const q = query(eventsRef, orderBy('date', 'desc'));
+                const querySnapshot = await getDocs(q);
+                
+                const eventsList = document.getElementById('eventsList');
+                const noEvents = document.getElementById('noEvents');
+                
+                if (querySnapshot.empty) {
+                    eventsList.style.display = 'none';
+                    noEvents.style.display = 'block';
+                } else {
+                    eventsList.style.display = 'block';
+                    noEvents.style.display = 'none';
+                    
+                    eventsList.innerHTML = querySnapshot.docs.map(doc => {
+                        const event = doc.data();
+                        return `
+                            <div class="event-card">
+                                <div class="event-header">
+                                    <div class="event-date">${formatDate(event.date)}</div>
+                                    <div class="event-type">${event.package}</div>
+                                </div>
+                                <div class="event-info">
+                                    <span class="event-info-icon">🎊</span>
+                                    ${event.type}
+                                </div>
+                                <div class="event-info">
+                                    <span class="event-info-icon">⏰</span>
+                                    ${event.time}
+                                </div>
+                                <div class="event-info">
+                                    <span class="event-info-icon">📍</span>
+                                    ${event.address}
+                                </div>
+                                <div class="event-info">
+                                    <span class="event-info-icon">👥</span>
+                                    ${event.animators ? event.animators.join(', ') : 'Nessun animatore assegnato'}
+                                </div>
+                                <button class="btn-action btn-complete" onclick="deleteEvent('${doc.id}')">
+                                    🗑️ Elimina
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (error) {
+                console.error('Error loading events:', error);
+            }
+        }
+
+        async function loadTeam() {
+            try {
+                const animatorsRef = collection(db, 'animators');
+                const querySnapshot = await getDocs(animatorsRef);
+                
+                const pendingAnimators = [];
+                const approvedAnimators = [];
+                
+                querySnapshot.docs.forEach(doc => {
+                    const animator = { id: doc.id, ...doc.data() };
+                    if (animator.status === 'pending') {
+                        pendingAnimators.push(animator);
+                    } else if (animator.status === 'approved') {
+                        approvedAnimators.push(animator);
+                    }
+                });
+                
+                const teamList = document.getElementById('teamList');
+                const pendingRequests = document.getElementById('pendingRequests');
+                
+                // Load pending requests
+                if (pendingAnimators.length > 0) {
+                    pendingRequests.innerHTML = `
+                        <h3 style="margin-bottom: 15px; color: #e67e22;">⏳ Richieste in Attesa (${pendingAnimators.length})</h3>
+                        ${pendingAnimators.map(pending => `
+                            <div class="animator-item" style="border-left: 4px solid #f39c12;">
+                                <div>
+                                    <div class="animator-name">${pending.name}</div>
+                                    <div style="font-size: 12px; color: #7f8c8d;">${pending.role} - ${pending.email}</div>
+                                    <div style="font-size: 11px; color: #95a5a6;">📞 ${pending.phone}</div>
+                                    <div style="font-size: 11px; color: #95a5a6;">📅 ${formatDate(pending.registeredAt.split('T')[0])} - Via: ${pending.source}</div>
+                                </div>
+                                <div style="display: flex; gap: 5px;">
+                                    <button onclick="approveAnimator('${pending.id}')" style="background: #27ae60; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">✅</button>
+                                    <button onclick="rejectAnimator('${pending.id}')" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">❌</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                        <div style="margin: 20px 0; border-bottom: 1px solid #e0e0e0;"></div>
+                    `;
+                } else {
+                    pendingRequests.innerHTML = '';
+                }
+                
+                // Load approved animators
+                teamList.innerHTML = approvedAnimators.map(animator => `
+                    <div class="animator-item">
+                        <div>
+                            <div class="animator-name">${animator.name}</div>
+                            <div style="font-size: 12px; color: #7f8c8d;">${animator.role}</div>
+                        </div>
+                        <div class="animator-status ${animator.workStatus === 'busy' ? 'status-busy' : 'status-available'}">
+                            ${animator.workStatus === 'busy' ? 'In Servizio' : 'Disponibile'}
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Update event modal with animators
+                const animatorSelect = document.getElementById('eventAnimators');
+                animatorSelect.innerHTML = approvedAnimators.map(a => 
+                    `<option value="${a.name}">${a.name} - ${a.role}</option>`
+                ).join('');
+                
+            } catch (error) {
+                console.error('Error loading team:', error);
+            }
+        }
+
+        async function loadMonitor() {
+            try {
+                const workLogsRef = collection(db, 'workLogs');
+                const q = query(workLogsRef, orderBy('startTime', 'desc'));
+                const querySnapshot = await getDocs(q);
+                
+                const liveActivities = document.getElementById('liveActivities');
+                const activityLog = document.getElementById('activityLog');
+                
+                const activeWork = [];
+                const recentLogs = [];
+                
+                querySnapshot.docs.forEach(doc => {
+                    const work = doc.data();
+                    if (!work.endTime) {
+                        activeWork.push(work);
+                    } else {
+                        recentLogs.push(work);
+                    }
+                });
+                
+                // Live activities
+                if (activeWork.length === 0) {
+                    liveActivities.innerHTML = '<p style="color: #7f8c8d;">Nessuna attività in corso</p>';
+                } else {
+                    liveActivities.innerHTML = activeWork.map(work => `
+                        <div style="padding: 10px; background: #f0f0f0; border-radius: 8px; margin-bottom: 10px;">
+                            <strong>${work.animatorName}</strong> - In servizio
+                            <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                                Iniziato: ${new Date(work.startTime).toLocaleTimeString('it-IT')}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+                // Activity log
+                const recentLogsLimited = recentLogs.slice(0, 5);
+                if (recentLogsLimited.length === 0) {
+                    activityLog.innerHTML = '<p style="color: #7f8c8d;">Nessuna attività registrata</p>';
+                } else {
+                    activityLog.innerHTML = recentLogsLimited.map(log => `
+                        <div style="padding: 10px; border-bottom: 1px solid #e0e0e0;">
+                            <strong>${log.animatorName}</strong>
+                            <div style="font-size: 12px; color: #7f8c8d;">
+                                ${new Date(log.startTime).toLocaleString('it-IT')}
+                                ${log.endTime ? ` - Durata: ${Math.round(log.duration / 3600000)}h` : ' - In corso'}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+            } catch (error) {
+                console.error('Error loading monitor:', error);
+            }
+        }
+
+        // More functions will be added here...
+        window.loadAdminData = loadAdminData;
+        window.loadAdminDashboard = loadAdminDashboard;
+        window.loadEvents = loadEvents;
+        window.loadTeam = loadTeam;
+        window.loadMonitor = loadMonitor;
+
+    </script>
+
+    <script>
+        // UI Helper functions
         function updateLoginHint() {
             const userType = document.getElementById('userType').value;
             const hint = document.getElementById('loginHint');
@@ -996,132 +1518,6 @@
             document.getElementById('loginScreen').style.display = 'flex';
         }
 
-        function registerAnimator() {
-            const name = document.getElementById('regFullName').value;
-            const email = document.getElementById('regEmail').value;
-            const phone = document.getElementById('regPhone').value;
-            const password = document.getElementById('regPassword').value;
-            const passwordConfirm = document.getElementById('regPasswordConfirm').value;
-            const role = document.getElementById('regRole').value;
-            const source = document.getElementById('regSource').value;
-            
-            // Validation
-            if (!name || !email || !phone || !password) {
-                showNotification('Errore', 'Compila tutti i campi obbligatori');
-                return;
-            }
-            
-            if (password !== passwordConfirm) {
-                showNotification('Errore', 'Le password non coincidono');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showNotification('Errore', 'La password deve essere di almeno 6 caratteri');
-                return;
-            }
-            
-            // Validate email format
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                showNotification('Errore', 'Inserisci un indirizzo email valido');
-                return;
-            }
-            
-            // Check if email already exists
-            const existingAnimator = animators.find(a => a.email === email);
-            const existingPending = pendingAnimators.find(a => a.email === email);
-            
-            if (existingAnimator || existingPending) {
-                showNotification('Errore', 'Email già registrata');
-                return;
-            }
-            
-            // Create pending registration
-            const pendingAnimator = {
-                id: Date.now().toString(),
-                name: name,
-                email: email,
-                phone: phone,
-                password: password,
-                role: role,
-                source: source,
-                status: 'pending',
-                registeredAt: new Date().toISOString()
-            };
-            
-            pendingAnimators.push(pendingAnimator);
-            saveToStorage();
-            
-            showNotification('Registrazione Inviata!', 'Attendi l\'approvazione dell\'amministratore');
-            
-            // Clear form and go back to login
-            document.getElementById('regFullName').value = '';
-            document.getElementById('regEmail').value = '';
-            document.getElementById('regPhone').value = '';
-            document.getElementById('regPassword').value = '';
-            document.getElementById('regPasswordConfirm').value = '';
-            
-            setTimeout(() => showLogin(), 2000);
-        }
-
-        function login() {
-            const userType = document.getElementById('userType').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            if (!userType || !email || !password) {
-                showNotification('Errore', 'Compila tutti i campi');
-                return;
-            }
-            
-            // Simple authentication
-            if (userType === 'admin' && email === 'admin@sorrentino.it' && password === 'admin123') {
-                currentUser = { type: 'admin', email: email, name: 'Amministratore' };
-                showAdminApp();
-            } else if (userType === 'animator') {
-                const animator = animators.find(a => a.email === email && a.password === password);
-                if (animator) {
-                    currentUser = { 
-                        type: 'animator', 
-                        email: email, 
-                        name: animator.name,
-                        id: animator.id
-                    };
-                    showAnimatorApp();
-                } else {
-                    showNotification('Errore', 'Credenziali non valide');
-                }
-            } else {
-                showNotification('Errore', 'Credenziali non valide');
-            }
-        }
-
-        function logout() {
-            currentUser = null;
-            if (workTimer) clearInterval(workTimer);
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('adminApp').style.display = 'none';
-            document.getElementById('animatorApp').style.display = 'none';
-        }
-
-        function showAdminApp() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('adminApp').style.display = 'block';
-            loadAdminDashboard();
-            loadEvents();
-            loadTeam();
-        }
-
-        function showAnimatorApp() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('animatorApp').style.display = 'block';
-            document.getElementById('animatorName').textContent = currentUser.name;
-            showNotification('Benvenuto!', 'Hai nuovi turni assegnati');
-            loadAnimatorEvents();
-            loadWorkHistory();
-        }
-
         function switchTab(tabName, appType) {
             const prefix = appType === 'admin' ? 'admin-' : 'animator-';
             const app = appType === 'admin' ? 'adminApp' : 'animatorApp';
@@ -1136,325 +1532,81 @@
             if (section) section.classList.add('active');
         }
 
-        function loadAdminDashboard() {
-            const today = new Date().toISOString().split('T')[0];
-            const todayEvents = events.filter(e => e.date === today).length;
-            const activeAnimators = workLogs.filter(w => !w.endTime).length;
-            const monthHours = workLogs.reduce((total, log) => {
-                if (log.duration) return total + log.duration;
-                return total;
-            }, 0);
-            
-            document.getElementById('todayEvents').textContent = todayEvents;
-            document.getElementById('activeAnimators').textContent = activeAnimators;
-            document.getElementById('monthHours').textContent = Math.round(monthHours / 3600000) + 'h';
-            
-            // Show pending registrations
-            const pendingCount = pendingAnimators.length;
-            const pendingCard = document.getElementById('pendingRegistrations');
-            
-            if (pendingCount > 0) {
-                pendingCard.style.display = 'block';
-                document.getElementById('pendingCount').textContent = pendingCount;
-            } else {
-                pendingCard.style.display = 'none';
-            }
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            return date.toLocaleDateString('it-IT', options);
         }
 
-        function loadEvents() {
-            const eventsList = document.getElementById('eventsList');
-            const noEvents = document.getElementById('noEvents');
+        function showNotification(title, message) {
+            const notification = document.getElementById('notification');
+            document.getElementById('notificationTitle').textContent = title;
+            document.getElementById('notificationMessage').textContent = message;
+            notification.classList.add('show');
             
-            if (events.length === 0) {
-                eventsList.style.display = 'none';
-                noEvents.style.display = 'block';
-            } else {
-                eventsList.style.display = 'block';
-                noEvents.style.display = 'none';
-                
-                eventsList.innerHTML = events.map(event => `
-                    <div class="event-card">
-                        <div class="event-header">
-                            <div class="event-date">${formatDate(event.date)}</div>
-                            <div class="event-type">${event.package}</div>
-                        </div>
-                        <div class="event-info">
-                            <span class="event-info-icon">🎊</span>
-                            ${event.type}
-                        </div>
-                        <div class="event-info">
-                            <span class="event-info-icon">⏰</span>
-                            ${event.time}
-                        </div>
-                        <div class="event-info">
-                            <span class="event-info-icon">📍</span>
-                            ${event.address}
-                        </div>
-                        <div class="event-info">
-                            <span class="event-info-icon">👥</span>
-                            ${event.animators ? event.animators.join(', ') : 'Nessun animatore assegnato'}
-                        </div>
-                        <button class="btn-action btn-complete" onclick="deleteEvent('${event.id}')">
-                            🗑️ Elimina
-                        </button>
-                    </div>
-                `).join('');
-            }
-            
-            // Update monitor section
-            loadMonitor();
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
         }
 
-        function loadTeam() {
-            const teamList = document.getElementById('teamList');
-            const pendingRequests = document.getElementById('pendingRequests');
-            
-            // Load pending requests
-            if (pendingAnimators.length > 0) {
-                pendingRequests.innerHTML = `
-                    <h3 style="margin-bottom: 15px; color: #e67e22;">⏳ Richieste in Attesa (${pendingAnimators.length})</h3>
-                    ${pendingAnimators.map(pending => `
-                        <div class="animator-item" style="border-left: 4px solid #f39c12;">
-                            <div>
-                                <div class="animator-name">${pending.name}</div>
-                                <div style="font-size: 12px; color: #7f8c8d;">${pending.role} - ${pending.email}</div>
-                                <div style="font-size: 11px; color: #95a5a6;">📞 ${pending.phone}</div>
-                                <div style="font-size: 11px; color: #95a5a6;">📅 ${formatDate(pending.registeredAt.split('T')[0])} - Via: ${pending.source}</div>
-                            </div>
-                            <div style="display: flex; gap: 5px;">
-                                <button onclick="approveAnimator('${pending.id}')" style="background: #27ae60; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">✅</button>
-                                <button onclick="rejectAnimator('${pending.id}')" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">❌</button>
-                            </div>
-                        </div>
-                    `).join('')}
-                    <div style="margin: 20px 0; border-bottom: 1px solid #e0e0e0;"></div>
-                `;
-            } else {
-                pendingRequests.innerHTML = '';
-            }
-            
-            // Load approved animators
-            teamList.innerHTML = animators.map(animator => `
-                <div class="animator-item">
-                    <div>
-                        <div class="animator-name">${animator.name}</div>
-                        <div style="font-size: 12px; color: #7f8c8d;">${animator.role}</div>
-                    </div>
-                    <div class="animator-status ${animator.status === 'available' ? 'status-available' : 'status-busy'}">
-                        ${animator.status === 'available' ? 'Disponibile' : 'In Servizio'}
-                    </div>
-                </div>
-            `).join('');
-            
-            // Update event modal with animators
-            const animatorSelect = document.getElementById('eventAnimators');
-            animatorSelect.innerHTML = animators.map(a => 
-                `<option value="${a.name}">${a.name} - ${a.role}</option>`
-            ).join('');
+        function openEventModal() {
+            document.getElementById('eventModal').classList.add('active');
+            document.getElementById('eventDate').valueAsDate = new Date();
         }
 
-        function approveAnimator(pendingId) {
-            const pending = pendingAnimators.find(p => p.id === pendingId);
-            if (!pending) return;
-            
-            if (confirm(`Approvare la registrazione di ${pending.name}?`)) {
-                // Move from pending to approved
-                const newAnimator = {
-                    id: Date.now().toString(),
-                    name: pending.name,
-                    email: pending.email,
-                    phone: pending.phone,
-                    role: pending.role,
-                    password: pending.password,
-                    status: 'available'
-                };
-                
-                animators.push(newAnimator);
-                pendingAnimators = pendingAnimators.filter(p => p.id !== pendingId);
-                saveToStorage();
-                
-                loadTeam();
-                loadAdminDashboard();
-                showNotification('Animatore Approvato!', `${pending.name} è stato aggiunto al team`);
-            }
+        function openAnimatorModal() {
+            document.getElementById('animatorModal').classList.add('active');
         }
 
-        function rejectAnimator(pendingId) {
-            const pending = pendingAnimators.find(p => p.id === pendingId);
-            if (!pending) return;
-            
-            if (confirm(`Rifiutare la registrazione di ${pending.name}?`)) {
-                pendingAnimators = pendingAnimators.filter(p => p.id !== pendingId);
-                saveToStorage();
-                
-                loadTeam();
-                loadAdminDashboard();
-                showNotification('Registrazione Rifiutata', `La richiesta di ${pending.name} è stata rifiutata`);
-            }
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
         }
 
-        function loadMonitor() {
-            // Live activities
-            const liveActivities = document.getElementById('liveActivities');
-            const activeWork = workLogs.filter(w => !w.endTime);
-            
-            if (activeWork.length === 0) {
-                liveActivities.innerHTML = '<p style="color: #7f8c8d;">Nessuna attività in corso</p>';
-            } else {
-                liveActivities.innerHTML = activeWork.map(work => `
-                    <div style="padding: 10px; background: #f0f0f0; border-radius: 8px; margin-bottom: 10px;">
-                        <strong>${work.animatorName}</strong> - In servizio
-                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
-                            Iniziato: ${new Date(work.startTime).toLocaleTimeString('it-IT')}
-                        </div>
-                    </div>
-                `).join('');
-            }
-            
-            // Activity log
-            const activityLog = document.getElementById('activityLog');
-            const recentLogs = workLogs.slice(-5).reverse();
-            
-            if (recentLogs.length === 0) {
-                activityLog.innerHTML = '<p style="color: #7f8c8d;">Nessuna attività registrata</p>';
-            } else {
-                activityLog.innerHTML = recentLogs.map(log => `
-                    <div style="padding: 10px; border-bottom: 1px solid #e0e0e0;">
-                        <strong>${log.animatorName}</strong>
-                        <div style="font-size: 12px; color: #7f8c8d;">
-                            ${new Date(log.startTime).toLocaleString('it-IT')}
-                            ${log.endTime ? ` - Durata: ${Math.round(log.duration / 3600000)}h` : ' - In corso'}
-                        </div>
-                    </div>
-                `).join('');
-            }
+        // Placeholder functions - will be implemented with Firebase
+        function approveAnimator(id) {
+            console.log('Approve animator:', id);
+            // Will be implemented with Firebase
         }
 
+        function rejectAnimator(id) {
+            console.log('Reject animator:', id);
+            // Will be implemented with Firebase
+        }
+
+        function deleteEvent(id) {
+            console.log('Delete event:', id);
+            // Will be implemented with Firebase
+        }
+
+        function saveEvent() {
+            console.log('Save event');
+            // Will be implemented with Firebase
+        }
+
+        function saveAnimator() {
+            console.log('Save animator');
+            // Will be implemented with Firebase
+        }
+
+        // Animator functions
         function loadAnimatorEvents() {
-            const myEventsList = document.getElementById('myEventsList');
-            const noTurni = document.getElementById('noTurni');
-            
-            // Filter events assigned to current animator
-            const myEvents = events.filter(e => 
-                e.animators && e.animators.includes(currentUser.name)
-            );
-            
-            if (myEvents.length === 0) {
-                myEventsList.style.display = 'none';
-                noTurni.style.display = 'block';
-            } else {
-                myEventsList.style.display = 'block';
-                noTurni.style.display = 'none';
-                
-                myEventsList.innerHTML = myEvents.map(event => `
-                    <div class="event-card">
-                        <div class="event-header">
-                            <div class="event-date">${formatDate(event.date)}</div>
-                            <div class="event-type">${event.package}</div>
-                        </div>
-                        <div class="event-info">
-                            <span class="event-info-icon">🎊</span>
-                            ${event.type}
-                        </div>
-                        <div class="event-info">
-                            <span class="event-info-icon">⏰</span>
-                            ${event.time}
-                        </div>
-                        <div class="event-info">
-                            <span class="event-info-icon">📍</span>
-                            ${event.address}
-                        </div>
-                        <button class="btn-action btn-start" onclick="startWork('${event.id}')">
-                            🚀 Inizia Turno
-                        </button>
-                    </div>
-                `).join('');
-            }
+            console.log('Load animator events');
+            // Will be implemented with Firebase
         }
 
         function loadWorkHistory() {
-            const workHistory = document.getElementById('workHistory');
-            const noHistory = document.getElementById('noHistory');
-            
-            const myHistory = workLogs.filter(w => 
-                w.animatorId === currentUser.id && w.endTime
-            );
-            
-            if (myHistory.length === 0) {
-                workHistory.style.display = 'none';
-                noHistory.style.display = 'block';
-            } else {
-                workHistory.style.display = 'block';
-                noHistory.style.display = 'none';
-                
-                workHistory.innerHTML = myHistory.map(log => `
-                    <div class="event-card">
-                        <div class="event-header">
-                            <div class="event-date">${formatDate(log.startTime)}</div>
-                            <div class="event-type">Completato</div>
-                        </div>
-                        <div class="event-info">
-                            <span class="event-info-icon">⏱️</span>
-                            Durata: ${Math.round(log.duration / 3600000)}h ${Math.round((log.duration % 3600000) / 60000)}min
-                        </div>
-                        <div class="event-info">
-                            <span class="event-info-icon">📦</span>
-                            Materiali: ${log.materials ? log.materials.length : 0} items
-                        </div>
-                    </div>
-                `).join('');
-            }
+            console.log('Load work history');
+            // Will be implemented with Firebase
         }
 
         function startWork(eventId) {
-            if (confirm('Confermi di iniziare il turno?')) {
-                currentEventId = eventId;
-                workStartTime = new Date();
-                
-                // Create work log
-                const workLog = {
-                    id: Date.now().toString(),
-                    eventId: eventId,
-                    animatorId: currentUser.id,
-                    animatorName: currentUser.name,
-                    startTime: workStartTime.toISOString(),
-                    materials: []
-                };
-                
-                workLogs.push(workLog);
-                saveToStorage();
-                
-                // Update animator status
-                const animator = animators.find(a => a.name === currentUser.name);
-                if (animator) {
-                    animator.status = 'busy';
-                    saveToStorage();
-                }
-                
-                // Start timer
-                startTimer();
-                
-                // Switch to active tab
-                document.querySelectorAll('#animatorApp .tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('#animatorApp .section').forEach(s => s.classList.remove('active'));
-                document.querySelector('#animatorApp .tab:nth-child(2)').classList.add('active');
-                document.getElementById('animator-active').classList.add('active');
-                
-                showNotification('Turno Iniziato!', 'Timer avviato. Buon lavoro!');
-            }
+            console.log('Start work:', eventId);
+            // Will be implemented with Firebase
         }
 
-        function startTimer() {
-            workTimer = setInterval(() => {
-                const now = new Date();
-                const diff = now - workStartTime;
-                const hours = Math.floor(diff / 3600000);
-                const minutes = Math.floor((diff % 3600000) / 60000);
-                const seconds = Math.floor((diff % 60000) / 1000);
-                
-                document.getElementById('workTimer').textContent = 
-                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            }, 1000);
+        function completeWork() {
+            console.log('Complete work');
+            // Will be implemented with Firebase
         }
 
         function addMaterial() {
@@ -1491,155 +1643,19 @@
             updateMaterialsList();
         }
 
-        function completeWork() {
-            if (!workStartTime) {
-                showNotification('Errore', 'Nessun turno attivo');
-                return;
-            }
-            
-            if (confirm('Confermi di aver completato il turno e rimesso tutto in magazzino?')) {
-                clearInterval(workTimer);
-                const endTime = new Date();
-                const duration = endTime - workStartTime;
-                
-                // Update work log
-                const currentLog = workLogs.find(w => 
-                    w.animatorId === currentUser.id && !w.endTime
-                );
-                
-                if (currentLog) {
-                    currentLog.endTime = endTime.toISOString();
-                    currentLog.duration = duration;
-                    currentLog.materials = [...materials];
-                    saveToStorage();
-                }
-                
-                // Update animator status
-                const animator = animators.find(a => a.name === currentUser.name);
-                if (animator) {
-                    animator.status = 'available';
-                    saveToStorage();
-                }
-                
-                const hours = Math.floor(duration / 3600000);
-                const minutes = Math.floor((duration % 3600000) / 60000);
-                
-                showNotification('Turno Completato!', `Durata: ${hours}h ${minutes}min`);
-                
-                // Reset
-                workStartTime = null;
-                currentEventId = null;
-                materials = [];
-                document.getElementById('workTimer').textContent = '00:00:00';
-                document.getElementById('materialsList').innerHTML = '';
-                
-                // Switch to history tab
-                loadWorkHistory();
-                document.querySelectorAll('#animatorApp .tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('#animatorApp .section').forEach(s => s.classList.remove('active'));
-                document.querySelector('#animatorApp .tab:nth-child(3)').classList.add('active');
-                document.getElementById('animator-history').classList.add('active');
-            }
-        }
-
-        function openEventModal() {
-            document.getElementById('eventModal').classList.add('active');
-            // Set default date to today
-            document.getElementById('eventDate').valueAsDate = new Date();
-        }
-
-        function openAnimatorModal() {
-            document.getElementById('animatorModal').classList.add('active');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        function saveEvent() {
-            const event = {
-                id: Date.now().toString(),
-                date: document.getElementById('eventDate').value,
-                time: document.getElementById('eventTime').value,
-                type: document.getElementById('eventType').value,
-                package: document.getElementById('eventPackage').value,
-                address: document.getElementById('eventAddress').value,
-                animators: Array.from(document.getElementById('eventAnimators').selectedOptions).map(o => o.value),
-                createdAt: new Date().toISOString()
-            };
-            
-            if (!event.date || !event.time || !event.address) {
-                showNotification('Errore', 'Compila tutti i campi obbligatori');
-                return;
-            }
-            
-            events.push(event);
-            saveToStorage();
-            loadEvents();
-            closeModal('eventModal');
-            showNotification('Evento Creato!', 'Nuovo evento aggiunto con successo');
-        }
-
-        function saveAnimator() {
-            const animator = {
-                id: Date.now().toString(),
-                name: document.getElementById('animatorFullName').value,
-                email: document.getElementById('animatorEmail').value,
-                phone: document.getElementById('animatorPhone').value,
-                role: document.getElementById('animatorRole').value,
-                password: '123456', // Default password
-                status: 'available'
-            };
-            
-            if (!animator.name || !animator.email) {
-                showNotification('Errore', 'Nome ed email sono obbligatori');
-                return;
-            }
-            
-            animators.push(animator);
-            saveToStorage();
-            loadTeam();
-            closeModal('animatorModal');
-            showNotification('Animatore Aggiunto!', `${animator.name} è stato aggiunto al team`);
-        }
-
-        function deleteEvent(eventId) {
-            if (confirm('Sei sicuro di voler eliminare questo evento?')) {
-                events = events.filter(e => e.id !== eventId);
-                saveToStorage();
-                loadEvents();
-                showNotification('Evento Eliminato', 'Evento rimosso con successo');
-            }
-        }
-
-        function showNotification(title, message) {
-            const notification = document.getElementById('notification');
-            document.getElementById('notificationTitle').textContent = title;
-            document.getElementById('notificationMessage').textContent = message;
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 4000);
-        }
-
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            const options = { day: 'numeric', month: 'long', year: 'numeric' };
-            return date.toLocaleDateString('it-IT', options);
-        }
-
         // Close modals when clicking outside
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.remove('active');
-                }
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.remove('active');
+                    }
+                });
             });
         });
 
-        // Auto-save every 30 seconds
-        setInterval(saveToStorage, 30000);
+        // Show loading screen initially
+        document.getElementById('loadingScreen').classList.add('show');
     </script>
 </body>
 </html>
