@@ -620,8 +620,58 @@
             background: rgba(46, 125, 50, 0.8);
         }
 
-        .firebase-status.error {
-            background: rgba(211, 47, 47, 0.8);
+        .warehouse-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 4px solid #27ae60;
+        }
+
+        .warehouse-item.low-stock {
+            border-left-color: #f39c12;
+        }
+
+        .warehouse-item.out-of-stock {
+            border-left-color: #e74c3c;
+        }
+
+        .warehouse-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .warehouse-code {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .warehouse-quantity {
+            font-size: 18px;
+            font-weight: 600;
+            color: #27ae60;
+        }
+
+        .warehouse-quantity.low {
+            color: #f39c12;
+        }
+
+        .warehouse-quantity.zero {
+            color: #e74c3c;
+        }
+
+        .material-grid-dynamic {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
         }
 
         /* Mobile optimizations */
@@ -764,6 +814,7 @@
                 <div class="tab active" onclick="switchTab('dashboard', 'admin')">Dashboard</div>
                 <div class="tab" onclick="switchTab('events', 'admin')">Eventi</div>
                 <div class="tab" onclick="switchTab('team', 'admin')">Team</div>
+                <div class="tab" onclick="switchTab('warehouse', 'admin')">Magazzino</div>
                 <div class="tab" onclick="switchTab('monitor', 'admin')">Monitor</div>
             </div>
         </div>
@@ -806,6 +857,22 @@
                 </button>
                 <div id="pendingRequests"></div>
                 <div id="teamList"></div>
+            </div>
+
+            <!-- Warehouse -->
+            <div id="admin-warehouse" class="section">
+                <div class="stat-card">
+                    <h3 style="margin-bottom: 15px;">📦 Gestione Magazzino</h3>
+                    <button class="btn-action btn-start" onclick="openMaterialModal()" style="margin-bottom: 20px;">
+                        ➕ Aggiungi Materiale
+                    </button>
+                    <div id="warehouseList"></div>
+                </div>
+                
+                <div class="stat-card" style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 15px;">📊 Materiali in Uso</h3>
+                    <div id="materialsInUse"></div>
+                </div>
             </div>
 
             <!-- Monitor -->
@@ -863,44 +930,24 @@
                 <div class="materials-section">
                     <h3>📦 Gestione Materiali</h3>
                     
-                    <!-- Material Selection Grid -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 15px 0;">
-                        <div class="material-grid-item" onclick="toggleMaterial('001')">
-                            <div class="material-icon">🎳</div>
-                            <div class="material-name">Birilli</div>
-                            <div class="material-code">001</div>
-                        </div>
-                        <div class="material-grid-item" onclick="toggleMaterial('002')">
-                            <div class="material-icon">🎨</div>
-                            <div class="material-name">Colori</div>
-                            <div class="material-code">002</div>
-                        </div>
-                        <div class="material-grid-item" onclick="toggleMaterial('003')">
-                            <div class="material-icon">🥤</div>
-                            <div class="material-name">Barattoli</div>
-                            <div class="material-code">003</div>
-                        </div>
-                        <div class="material-grid-item" onclick="toggleMaterial('004')">
-                            <div class="material-icon">⚽</div>
-                            <div class="material-name">Pallone</div>
-                            <div class="material-code">004</div>
-                        </div>
-                        <div class="material-grid-item" onclick="toggleMaterial('005')">
-                            <div class="material-icon">🪢</div>
-                            <div class="material-name">Corda</div>
-                            <div class="material-code">005</div>
-                        </div>
-                        <div class="material-grid-item" onclick="toggleMaterial('006')">
-                            <div class="material-icon">🧽</div>
-                            <div class="material-name">Spugne</div>
-                            <div class="material-code">006</div>
-                        </div>
-                        <div class="material-grid-item" onclick="toggleMaterial('007')">
-                            <div class="material-icon">⭕</div>
-                            <div class="material-name">Cerchi</div>
-                            <div class="material-code">007</div>
-                        </div>
-                        <div class="material-grid-item" onclick="toggleMaterial('008')">
+                    <!-- Material Selection Grid (Dynamic) -->
+                    <div class="material-grid-dynamic"></div>
+                    
+                    <!-- Selected Materials -->
+                    <div id="selectedMaterialsList" style="margin-top: 20px;"></div>
+                    
+                    <!-- Return Materials Section (shown at end of shift) -->
+                    <div id="returnMaterialsSection" style="display: none; margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 10px;">
+                        <h4 style="color: #856404; margin-bottom: 10px;">🔄 Conferma Rientro Materiali</h4>
+                        <p style="font-size: 14px; color: #856404; margin-bottom: 15px;">
+                            Conferma che tutti i materiali sono stati riportati in magazzino:
+                        </p>
+                        <div id="returnMaterialsList"></div>
+                        <button class="btn-action btn-materials" onclick="confirmMaterialsReturn()" style="margin-top: 10px;">
+                            ✅ Confermo Rientro Completo
+                        </button>
+                    </div>
+                </div> onclick="toggleMaterial('008')">
                             <div class="material-icon">🚦</div>
                             <div class="material-name">Coni</div>
                             <div class="material-code">008</div>
@@ -1015,8 +1062,104 @@
         </div>
     </div>
 
-    <!-- Animator Modal -->
-    <div class="modal" id="animatorModal">
+    <!-- Material Modal -->
+    <div class="modal" id="materialModal">
+        <div class="modal-content">
+            <h2 class="modal-title">📦 Nuovo Materiale</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Codice Materiale</label>
+                <input type="text" class="form-input" id="materialCodeInput" placeholder="es: 013" maxlength="10">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Nome Materiale</label>
+                <input type="text" class="form-input" id="materialNameInput" placeholder="es: Set giochi da tavolo">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Icona (Emoji)</label>
+                <input type="text" class="form-input" id="materialIconInput" placeholder="🎲" maxlength="2">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Quantità Disponibile</label>
+                <input type="number" class="form-input" id="materialQuantityInput" placeholder="1" min="1" value="1">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Categoria</label>
+                <select class="form-select" id="materialCategoryInput">
+                    <option>Giochi</option>
+                    <option>Audio/Video</option>
+                    <option>Trucchi/Costumi</option>
+                    <option>Sport</option>
+                    <option>Accessori</option>
+                    <option>Altro</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Note</label>
+                <textarea class="form-input" id="materialNotesInput" placeholder="Descrizione opzionale..." rows="3"></textarea>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-modal btn-cancel" onclick="closeModal('materialModal')">Annulla</button>
+                <button class="btn-modal btn-save" onclick="saveMaterial()">💾 Salva Materiale</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Material Modal -->
+    <div class="modal" id="editMaterialModal">
+        <div class="modal-content">
+            <h2 class="modal-title">✏️ Modifica Materiale</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Codice Materiale</label>
+                <input type="text" class="form-input" id="editMaterialCode" readonly style="background: #f5f5f5;">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Nome Materiale</label>
+                <input type="text" class="form-input" id="editMaterialName">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Icona (Emoji)</label>
+                <input type="text" class="form-input" id="editMaterialIcon" maxlength="2">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Quantità Disponibile</label>
+                <input type="number" class="form-input" id="editMaterialQuantity" min="0">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Categoria</label>
+                <select class="form-select" id="editMaterialCategory">
+                    <option>Giochi</option>
+                    <option>Audio/Video</option>
+                    <option>Trucchi/Costumi</option>
+                    <option>Sport</option>
+                    <option>Accessori</option>
+                    <option>Altro</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Note</label>
+                <textarea class="form-input" id="editMaterialNotes" rows="3"></textarea>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-modal" onclick="deleteMaterial()" style="background: #e74c3c; color: white;">🗑️ Elimina</button>
+                <button class="btn-modal btn-cancel" onclick="closeModal('editMaterialModal')">Annulla</button>
+                <button class="btn-modal btn-save" onclick="updateMaterial()">💾 Aggiorna</button>
+            </div>
+        </div>
+    </div>
         <div class="modal-content">
             <h2 class="modal-title">👤 Nuovo Animatore</h2>
             
@@ -1098,24 +1241,26 @@
         window.workStartTime = null;
         window.currentEventId = null;
         window.materialsReturned = false;
+        window.warehouseMaterials = [];
+        window.currentEditingMaterial = null;
 
-        // Material Database
-        const materialDatabase = {
-            '001': 'Birilli colorati',
-            '002': 'Set colori e pennelli',
-            '003': 'Barattoli gioco',
-            '004': 'Pallone gonfiabile',
-            '005': 'Corda tiro alla fune',
-            '006': 'Box spugne',
-            '007': 'Cerchi colorati',
-            '008': 'Coni segnalatori',
-            '009': 'Kit trucca bimbi',
-            '010': 'Microfono e casse',
-            '011': 'Costume mascotte',
-            '012': 'Macchina bolle sapone'
+        // Default Material Database (can be overridden by warehouse)
+        const defaultMaterials = {
+            '001': { name: 'Birilli colorati', icon: '🎳', category: 'Giochi', quantity: 5 },
+            '002': { name: 'Set colori e pennelli', icon: '🎨', category: 'Trucchi/Costumi', quantity: 3 },
+            '003': { name: 'Barattoli gioco', icon: '🥤', category: 'Giochi', quantity: 10 },
+            '004': { name: 'Pallone gonfiabile', icon: '⚽', category: 'Sport', quantity: 2 },
+            '005': { name: 'Corda tiro alla fune', icon: '🪢', category: 'Sport', quantity: 1 },
+            '006': { name: 'Box spugne', icon: '🧽', category: 'Accessori', quantity: 8 },
+            '007': { name: 'Cerchi colorati', icon: '⭕', category: 'Sport', quantity: 6 },
+            '008': { name: 'Coni segnalatori', icon: '🚦', category: 'Sport', quantity: 4 },
+            '009': { name: 'Kit trucca bimbi', icon: '🎭', category: 'Trucchi/Costumi', quantity: 2 },
+            '010': { name: 'Microfono e casse', icon: '🎤', category: 'Audio/Video', quantity: 1 },
+            '011': { name: 'Costume mascotte', icon: '🐻', category: 'Trucchi/Costumi', quantity: 1 },
+            '012': { name: 'Macchina bolle sapone', icon: '🫧', category: 'Accessori', quantity: 1 }
         };
 
-        window.materialDatabase = materialDatabase;
+        window.materialDatabase = defaultMaterials;
 
         // Initialize app
         window.onload = function() {
@@ -1210,6 +1355,7 @@
             document.getElementById('adminApp').style.display = 'block';
             document.getElementById('animatorApp').style.display = 'none';
             loadAdminData();
+            loadWarehouseMaterials();
         }
 
         function showAnimatorApp() {
@@ -1220,6 +1366,7 @@
             document.getElementById('animatorName').textContent = window.currentUser.name;
             loadAnimatorEvents();
             loadWorkHistory();
+            loadWarehouseMaterials(); // Load materials for animator too
         }
 
         async function initializeSampleData() {
@@ -1402,14 +1549,249 @@
             await signOut(auth);
         };
 
+        // Warehouse management functions
+        async function loadWarehouseMaterials() {
+            try {
+                const materialsRef = collection(db, 'warehouse');
+                const querySnapshot = await getDocs(materialsRef);
+                
+                window.warehouseMaterials = [];
+                querySnapshot.docs.forEach(doc => {
+                    window.warehouseMaterials.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // If no materials in warehouse, initialize with defaults
+                if (window.warehouseMaterials.length === 0) {
+                    await initializeDefaultMaterials();
+                }
+                
+                // Update material database for animators
+                updateMaterialDatabase();
+                
+                // Update warehouse display if on admin
+                if (window.currentUser && window.currentUser.type === 'admin') {
+                    updateWarehouseDisplay();
+                }
+                
+                // Update material grid for animators
+                updateMaterialGrid();
+                
+            } catch (error) {
+                console.error('Error loading warehouse materials:', error);
+            }
+        }
+
+        async function initializeDefaultMaterials() {
+            try {
+                for (const [code, data] of Object.entries(defaultMaterials)) {
+                    await addDoc(collection(db, 'warehouse'), {
+                        code: code,
+                        name: data.name,
+                        icon: data.icon,
+                        category: data.category,
+                        quantity: data.quantity,
+                        notes: '',
+                        createdAt: new Date().toISOString()
+                    });
+                }
+                // Reload after initialization
+                await loadWarehouseMaterials();
+            } catch (error) {
+                console.error('Error initializing materials:', error);
+            }
+        }
+
+        function updateMaterialDatabase() {
+            const newDatabase = {};
+            window.warehouseMaterials.forEach(material => {
+                newDatabase[material.code] = material.name;
+            });
+            window.materialDatabase = newDatabase;
+        }
+
+        function updateWarehouseDisplay() {
+            const warehouseList = document.getElementById('warehouseList');
+            if (!warehouseList) return;
+            
+            if (window.warehouseMaterials.length === 0) {
+                warehouseList.innerHTML = '<p style="color: #7f8c8d;">Nessun materiale in magazzino</p>';
+                return;
+            }
+            
+            warehouseList.innerHTML = window.warehouseMaterials.map(material => {
+                const stockClass = material.quantity === 0 ? 'out-of-stock' : 
+                                 material.quantity <= 2 ? 'low-stock' : '';
+                const quantityClass = material.quantity === 0 ? 'zero' : 
+                                    material.quantity <= 2 ? 'low' : '';
+                
+                return `
+                    <div class="warehouse-item ${stockClass}" onclick="editMaterial('${material.id}')">
+                        <div class="warehouse-header">
+                            <div>
+                                <span class="warehouse-code">${material.code}</span>
+                                <span style="margin-left: 10px; font-size: 16px;">${material.icon}</span>
+                                <span style="margin-left: 8px; font-weight: 600;">${material.name}</span>
+                            </div>
+                            <div class="warehouse-quantity ${quantityClass}">
+                                ${material.quantity} pz
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #7f8c8d;">
+                            ${material.category}${material.notes ? ' • ' + material.notes : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateMaterialGrid() {
+            const materialGrids = document.querySelectorAll('.materials-section .material-grid-dynamic, .materials-section > div:nth-child(2)');
+            
+            materialGrids.forEach(grid => {
+                if (!grid) return;
+                
+                grid.innerHTML = window.warehouseMaterials.filter(m => m.quantity > 0).map(material => `
+                    <div class="material-grid-item" onclick="toggleMaterial('${material.code}')" ${material.quantity === 0 ? 'style="opacity: 0.5; pointer-events: none;"' : ''}>
+                        <div class="material-icon">${material.icon}</div>
+                        <div class="material-name">${material.name}</div>
+                        <div class="material-code">${material.code}</div>
+                        <div style="font-size: 10px; color: #27ae60;">${material.quantity} disponibili</div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        window.openMaterialModal = function() {
+            document.getElementById('materialModal').classList.add('active');
+        };
+
+        window.saveMaterial = async function() {
+            try {
+                const code = document.getElementById('materialCodeInput').value.trim();
+                const name = document.getElementById('materialNameInput').value.trim();
+                const icon = document.getElementById('materialIconInput').value.trim();
+                const quantity = parseInt(document.getElementById('materialQuantityInput').value);
+                const category = document.getElementById('materialCategoryInput').value;
+                const notes = document.getElementById('materialNotesInput').value.trim();
+                
+                if (!code || !name || !icon) {
+                    showNotification('Errore', 'Compila codice, nome e icona');
+                    return;
+                }
+                
+                // Check if code already exists
+                const existingMaterial = window.warehouseMaterials.find(m => m.code === code);
+                if (existingMaterial) {
+                    showNotification('Errore', 'Codice materiale già esistente');
+                    return;
+                }
+                
+                await addDoc(collection(db, 'warehouse'), {
+                    code: code,
+                    name: name,
+                    icon: icon,
+                    quantity: quantity,
+                    category: category,
+                    notes: notes,
+                    createdAt: new Date().toISOString(),
+                    createdBy: window.currentUser.email
+                });
+                
+                showNotification('Materiale Aggiunto!', `${name} aggiunto al magazzino`);
+                closeModal('materialModal');
+                
+                // Clear form
+                document.getElementById('materialCodeInput').value = '';
+                document.getElementById('materialNameInput').value = '';
+                document.getElementById('materialIconInput').value = '';
+                document.getElementById('materialQuantityInput').value = '1';
+                document.getElementById('materialNotesInput').value = '';
+                
+                await loadWarehouseMaterials();
+                
+            } catch (error) {
+                console.error('Error saving material:', error);
+                showNotification('Errore', 'Errore nel salvare il materiale');
+            }
+        };
+
+        window.editMaterial = function(materialId) {
+            const material = window.warehouseMaterials.find(m => m.id === materialId);
+            if (!material) return;
+            
+            window.currentEditingMaterial = materialId;
+            
+            document.getElementById('editMaterialCode').value = material.code;
+            document.getElementById('editMaterialName').value = material.name;
+            document.getElementById('editMaterialIcon').value = material.icon;
+            document.getElementById('editMaterialQuantity').value = material.quantity;
+            document.getElementById('editMaterialCategory').value = material.category;
+            document.getElementById('editMaterialNotes').value = material.notes || '';
+            
+            document.getElementById('editMaterialModal').classList.add('active');
+        };
+
+        window.updateMaterial = async function() {
+            if (!window.currentEditingMaterial) return;
+            
+            try {
+                const name = document.getElementById('editMaterialName').value.trim();
+                const icon = document.getElementById('editMaterialIcon').value.trim();
+                const quantity = parseInt(document.getElementById('editMaterialQuantity').value);
+                const category = document.getElementById('editMaterialCategory').value;
+                const notes = document.getElementById('editMaterialNotes').value.trim();
+                
+                if (!name || !icon) {
+                    showNotification('Errore', 'Nome e icona sono obbligatori');
+                    return;
+                }
+                
+                const materialRef = doc(db, 'warehouse', window.currentEditingMaterial);
+                await updateDoc(materialRef, {
+                    name: name,
+                    icon: icon,
+                    quantity: quantity,
+                    category: category,
+                    notes: notes,
+                    updatedAt: new Date().toISOString(),
+                    updatedBy: window.currentUser.email
+                });
+                
+                showNotification('Materiale Aggiornato!', 'Modifiche salvate con successo');
+                closeModal('editMaterialModal');
+                await loadWarehouseMaterials();
+                
+            } catch (error) {
+                console.error('Error updating material:', error);
+                showNotification('Errore', 'Errore nell\'aggiornamento');
+            }
+        };
+
+        window.deleteMaterial = async function() {
+            if (!window.currentEditingMaterial) return;
+            
+            const material = window.warehouseMaterials.find(m => m.id === window.currentEditingMaterial);
+            if (!material) return;
+            
+            if (!confirm(`Sei sicuro di voler eliminare "${material.name}"?`)) {
+                return;
+            }
+            
+            try {
+                await deleteDoc(doc(db, 'warehouse', window.currentEditingMaterial));
+                showNotification('Materiale Eliminato', 'Materiale rimosso dal magazzino');
+                closeModal('editMaterialModal');
+                await loadWarehouseMaterials();
+            } catch (error) {
+                console.error('Error deleting material:', error);
+                showNotification('Errore', 'Errore nell\'eliminazione');
+            }
+        };
+
         // Make functions global
-        window.updateFirebaseStatus = updateFirebaseStatus;
-        window.handleAuthenticatedUser = handleAuthenticatedUser;
-        window.loadAnimatorData = loadAnimatorData;
-        window.showLoginScreen = showLoginScreen;
-        window.showAdminApp = showAdminApp;
-        window.showAnimatorApp = showAnimatorApp;
-        window.initializeSampleData = initializeSampleData;
+        window.loadWarehouseMaterials = loadWarehouseMaterials;
+        window.updateWarehouseDisplay = updateWarehouseDisplay;
+        window.updateMaterialGrid = updateMaterialGrid;
 
     </script>
 
@@ -1487,8 +1869,11 @@
 
         // Material management functions
         window.toggleMaterial = function(code) {
-            const materialData = window.materialDatabase[code];
-            if (!materialData) return;
+            const material = window.warehouseMaterials.find(m => m.code === code);
+            if (!material || material.quantity === 0) {
+                showNotification('Non Disponibile', 'Materiale non disponibile in magazzino');
+                return;
+            }
             
             const existingIndex = window.materials.findIndex(m => m.code === code);
             const gridItem = document.querySelector(`[onclick="toggleMaterial('${code}')"]`);
@@ -1497,12 +1882,12 @@
                 // Remove material
                 window.materials.splice(existingIndex, 1);
                 if (gridItem) gridItem.classList.remove('selected');
-                showNotification('Materiale Rimosso', materialData);
+                showNotification('Materiale Rimosso', material.name);
             } else {
                 // Add material
-                window.materials.push({ code, name: materialData });
+                window.materials.push({ code, name: material.name });
                 if (gridItem) gridItem.classList.add('selected');
-                showNotification('Materiale Aggiunto', materialData);
+                showNotification('Materiale Aggiunto', material.name);
             }
             
             updateSelectedMaterialsList();
@@ -1546,9 +1931,10 @@
             }
         };
 
-        // Placeholder functions for now
+        // Placeholder functions for now - these will be completed
         function loadAdminData() {
             console.log('Loading admin data...');
+            updateWarehouseDisplay();
         }
 
         function loadAnimatorEvents() {
