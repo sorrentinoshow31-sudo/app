@@ -667,11 +667,57 @@
             color: #e74c3c;
         }
 
-        .material-grid-dynamic {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
-            margin: 15px 0;
+        .number-button {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .number-button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .number-button.unavailable {
+            background: #f8f9fa;
+            border-color: #e0e0e0;
+            color: #7f8c8d;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .number-button.unavailable:hover {
+            transform: none;
+            background: #f8f9fa;
+            color: #7f8c8d;
+        }
+
+        .material-with-number {
+            background: #e8f5e8;
+            border: 1px solid #27ae60;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .material-number-badge {
+            background: #27ae60;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
         }
 
         /* Mobile optimizations */
@@ -1111,7 +1157,19 @@
         </div>
     </div>
 
-    <!-- Edit Material Modal -->
+    <!-- Number Selection Modal -->
+    <div class="modal" id="numberSelectionModal">
+        <div class="modal-content">
+            <h2 class="modal-title">🔢 Seleziona Numero</h2>
+            <p id="numberSelectionText"></p>
+            
+            <div id="numberGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); gap: 10px; margin: 20px 0;"></div>
+            
+            <div class="modal-buttons">
+                <button class="btn-modal btn-cancel" onclick="closeModal('numberSelectionModal')">Annulla</button>
+            </div>
+        </div>
+    </div>
     <div class="modal" id="editMaterialModal">
         <div class="modal-content">
             <h2 class="modal-title">✏️ Modifica Materiale</h2>
@@ -1244,20 +1302,99 @@
         window.warehouseMaterials = [];
         window.currentEditingMaterial = null;
 
-        // Default Material Database (can be overridden by warehouse)
+        // Default Material Database with inventory numbers
         const defaultMaterials = {
-            '001': { name: 'Birilli colorati', icon: '🎳', category: 'Giochi', quantity: 5 },
-            '002': { name: 'Set colori e pennelli', icon: '🎨', category: 'Trucchi/Costumi', quantity: 3 },
-            '003': { name: 'Barattoli gioco', icon: '🥤', category: 'Giochi', quantity: 10 },
-            '004': { name: 'Pallone gonfiabile', icon: '⚽', category: 'Sport', quantity: 2 },
-            '005': { name: 'Corda tiro alla fune', icon: '🪢', category: 'Sport', quantity: 1 },
-            '006': { name: 'Box spugne', icon: '🧽', category: 'Accessori', quantity: 8 },
-            '007': { name: 'Cerchi colorati', icon: '⭕', category: 'Sport', quantity: 6 },
-            '008': { name: 'Coni segnalatori', icon: '🚦', category: 'Sport', quantity: 4 },
-            '009': { name: 'Kit trucca bimbi', icon: '🎭', category: 'Trucchi/Costumi', quantity: 2 },
-            '010': { name: 'Microfono e casse', icon: '🎤', category: 'Audio/Video', quantity: 1 },
-            '011': { name: 'Costume mascotte', icon: '🐻', category: 'Trucchi/Costumi', quantity: 1 },
-            '012': { name: 'Macchina bolle sapone', icon: '🫧', category: 'Accessori', quantity: 1 }
+            '001': { 
+                name: 'Birilli colorati', 
+                icon: '🎳', 
+                category: 'Giochi', 
+                quantity: 5,
+                hasNumbers: true,
+                numbers: ['1', '2', '3', '4', '5']
+            },
+            '002': { 
+                name: 'Set colori e pennelli', 
+                icon: '🎨', 
+                category: 'Trucchi/Costumi', 
+                quantity: 3,
+                hasNumbers: true,
+                numbers: ['A', 'B', 'C']
+            },
+            '003': { 
+                name: 'Barattoli gioco', 
+                icon: '🥤', 
+                category: 'Giochi', 
+                quantity: 10,
+                hasNumbers: false
+            },
+            '004': { 
+                name: 'Pallone gonfiabile', 
+                icon: '⚽', 
+                category: 'Sport', 
+                quantity: 2,
+                hasNumbers: true,
+                numbers: ['1', '2']
+            },
+            '005': { 
+                name: 'Corda tiro alla fune', 
+                icon: '🪢', 
+                category: 'Sport', 
+                quantity: 1,
+                hasNumbers: false
+            },
+            '006': { 
+                name: 'Box spugne', 
+                icon: '🧽', 
+                category: 'Accessori', 
+                quantity: 20,
+                hasNumbers: true,
+                numbers: Array.from({length: 20}, (_, i) => String(i + 1))
+            },
+            '007': { 
+                name: 'Cerchi colorati', 
+                icon: '⭕', 
+                category: 'Sport', 
+                quantity: 6,
+                hasNumbers: true,
+                numbers: ['1', '2', '3', '4', '5', '6']
+            },
+            '008': { 
+                name: 'Coni segnalatori', 
+                icon: '🚦', 
+                category: 'Sport', 
+                quantity: 4,
+                hasNumbers: true,
+                numbers: ['1', '2', '3', '4']
+            },
+            '009': { 
+                name: 'Kit trucca bimbi', 
+                icon: '🎭', 
+                category: 'Trucchi/Costumi', 
+                quantity: 2,
+                hasNumbers: true,
+                numbers: ['A', 'B']
+            },
+            '010': { 
+                name: 'Microfono e casse', 
+                icon: '🎤', 
+                category: 'Audio/Video', 
+                quantity: 1,
+                hasNumbers: false
+            },
+            '011': { 
+                name: 'Costume mascotte', 
+                icon: '🐻', 
+                category: 'Trucchi/Costumi', 
+                quantity: 1,
+                hasNumbers: false
+            },
+            '012': { 
+                name: 'Macchina bolle sapone', 
+                icon: '🫧', 
+                category: 'Accessori', 
+                quantity: 1,
+                hasNumbers: false
+            }
         };
 
         window.materialDatabase = defaultMaterials;
@@ -1867,7 +2004,7 @@
             document.getElementById(modalId).classList.remove('active');
         }
 
-        // Material management functions
+        // Material management functions with numbers
         window.toggleMaterial = function(code) {
             const material = window.warehouseMaterials.find(m => m.code === code);
             if (!material || material.quantity === 0) {
@@ -1875,21 +2012,80 @@
                 return;
             }
             
+            // Check if material is already selected
             const existingIndex = window.materials.findIndex(m => m.code === code);
-            const gridItem = document.querySelector(`[onclick="toggleMaterial('${code}')"]`);
-            
             if (existingIndex >= 0) {
                 // Remove material
                 window.materials.splice(existingIndex, 1);
+                const gridItem = document.querySelector(`[onclick="toggleMaterial('${code}')"]`);
                 if (gridItem) gridItem.classList.remove('selected');
                 showNotification('Materiale Rimosso', material.name);
-            } else {
-                // Add material
-                window.materials.push({ code, name: material.name });
-                if (gridItem) gridItem.classList.add('selected');
-                showNotification('Materiale Aggiunto', material.name);
+                updateSelectedMaterialsList();
+                return;
             }
             
+            // Check if material has numbers
+            if (material.hasNumbers && material.numbers && material.numbers.length > 0) {
+                openNumberSelectionModal(material);
+            } else {
+                // Add material without number
+                window.materials.push({ 
+                    code: code, 
+                    name: material.name,
+                    number: null
+                });
+                const gridItem = document.querySelector(`[onclick="toggleMaterial('${code}')"]`);
+                if (gridItem) gridItem.classList.add('selected');
+                showNotification('Materiale Aggiunto', material.name);
+                updateSelectedMaterialsList();
+            }
+        };
+
+        function openNumberSelectionModal(material) {
+            document.getElementById('numberSelectionText').textContent = 
+                `Quale numero di "${material.name}" vuoi prendere?`;
+            
+            const numberGrid = document.getElementById('numberGrid');
+            const availableNumbers = getAvailableNumbers(material);
+            
+            numberGrid.innerHTML = availableNumbers.map(number => {
+                const isAvailable = !isNumberInUse(material.code, number);
+                return `
+                    <div class="number-button ${isAvailable ? '' : 'unavailable'}" 
+                         ${isAvailable ? `onclick="selectMaterialNumber('${material.code}', '${number}')"` : ''}>
+                        ${number}
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('numberSelectionModal').classList.add('active');
+        }
+
+        function getAvailableNumbers(material) {
+            return material.numbers || [];
+        }
+
+        function isNumberInUse(code, number) {
+            // Check if this number is already selected by current user
+            return window.materials.some(m => m.code === code && m.number === number);
+        }
+
+        window.selectMaterialNumber = function(code, number) {
+            const material = window.warehouseMaterials.find(m => m.code === code);
+            if (!material) return;
+            
+            // Add material with specific number
+            window.materials.push({
+                code: code,
+                name: material.name,
+                number: number
+            });
+            
+            const gridItem = document.querySelector(`[onclick="toggleMaterial('${code}')"]`);
+            if (gridItem) gridItem.classList.add('selected');
+            
+            showNotification('Materiale Aggiunto', `${material.name} #${number}`);
+            closeModal('numberSelectionModal');
             updateSelectedMaterialsList();
         };
 
@@ -1902,18 +2098,52 @@
             } else {
                 list.innerHTML = `
                     <h4 style="margin-bottom: 10px;">📋 Materiali Prelevati (${window.materials.length})</h4>
-                    ${window.materials.map(m => `
-                        <div class="selected-material-item">
+                    ${window.materials.map((m, index) => `
+                        <div class="material-with-number">
                             <div>
                                 <span style="font-weight: 600;">${m.name}</span>
                                 <span style="margin-left: 10px; font-size: 12px; color: #7f8c8d;">Codice: ${m.code}</span>
+                                ${m.number ? `<span class="material-number-badge">#${m.number}</span>` : ''}
                             </div>
-                            <button onclick="toggleMaterial('${m.code}')" style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">✕</button>
+                            <button onclick="removeMaterialByIndex(${index})" style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">✕</button>
                         </div>
                     `).join('')}
                 `;
             }
         }
+
+        window.removeMaterialByIndex = function(index) {
+            const material = window.materials[index];
+            if (!material) return;
+            
+            window.materials.splice(index, 1);
+            
+            // Update grid item if no more of this material type
+            const hasMoreOfSameType = window.materials.some(m => m.code === material.code);
+            if (!hasMoreOfSameType) {
+                const gridItem = document.querySelector(`[onclick="toggleMaterial('${material.code}')"]`);
+                if (gridItem) gridItem.classList.remove('selected');
+            }
+            
+            showNotification('Materiale Rimosso', `${material.name}${material.number ? ' #' + material.number : ''}`);
+            updateSelectedMaterialsList();
+        };
+
+        function toggleNumbersInput() {
+            const hasNumbers = document.getElementById('materialHasNumbers').value === 'true';
+            const numbersGroup = document.getElementById('numbersInputGroup');
+            const quantityInput = document.getElementById('materialQuantityInput');
+            
+            if (hasNumbers) {
+                numbersGroup.style.display = 'block';
+                if (quantityInput) quantityInput.style.display = 'none';
+            } else {
+                numbersGroup.style.display = 'none';
+                if (quantityInput) quantityInput.style.display = 'block';
+            }
+        }
+
+        window.toggleNumbersInput = toggleNumbersInput;
 
         window.confirmMaterialsReturn = function() {
             if (confirm('Confermi che tutti i materiali sono stati rimessi in magazzino?')) {
