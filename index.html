@@ -920,9 +920,14 @@
 
             <!-- Team -->
             <div id="admin-team" class="section">
-                <button class="btn-action btn-start" onclick="openAnimatorModal()" style="margin-bottom: 20px;">
-                    ➕ Aggiungi Animatore
-                </button>
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn-action btn-start" onclick="openAnimatorModal()">
+                        ➕ Aggiungi Animatore
+                    </button>
+                    <button class="btn-action btn-materials" onclick="loadTeam()" style="background: #3498db;">
+                        🔄 Aggiorna Team
+                    </button>
+                </div>
                 <div id="pendingRequests"></div>
                 <div id="teamList"></div>
             </div>
@@ -1511,6 +1516,11 @@
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('adminApp').style.display = 'none';
             document.getElementById('animatorApp').style.display = 'none';
+            
+            // Hide install banner if running as standalone app
+            if (isRunningStandalone()) {
+                hideInstallBanner();
+            }
         }
 
         function showAdminApp() {
@@ -2064,55 +2074,31 @@
             }
         }
 
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
+        // Register Service Worker (external file method)
+        if ('serviceWorker' in navigator && location.protocol === 'https:') {
             window.addEventListener('load', async () => {
                 try {
-                    // Create and register service worker inline
-                    const swCode = `
-                        const CACHE_NAME = 'sorrentino-v1';
-                        const urlsToCache = [
-                            '/',
-                            '/index.html'
-                        ];
-
-                        self.addEventListener('install', (event) => {
-                            event.waitUntil(
-                                caches.open(CACHE_NAME)
-                                    .then((cache) => cache.addAll(urlsToCache))
-                            );
-                        });
-
-                        self.addEventListener('fetch', (event) => {
-                            event.respondWith(
-                                caches.match(event.request)
-                                    .then((response) => {
-                                        if (response) {
-                                            return response;
-                                        }
-                                        return fetch(event.request);
-                                    })
-                            );
-                        });
-                    `;
-                    
-                    const blob = new Blob([swCode], { type: 'application/javascript' });
-                    const swUrl = URL.createObjectURL(blob);
-                    
-                    const registration = await navigator.serviceWorker.register(swUrl);
+                    // Try to register external service worker
+                    const registration = await navigator.serviceWorker.register('/sw.js');
                     console.log('ServiceWorker registration successful');
-                    
-                    // Show install banner after a delay if not dismissed
-                    setTimeout(() => {
-                        if (!localStorage.getItem('installBannerDismissed') && !isRunningStandalone()) {
-                            showInstallBanner();
-                        }
-                    }, 3000);
-                    
                 } catch (error) {
                     console.log('ServiceWorker registration failed: ', error);
                 }
+                
+                // Show install banner after a delay if not dismissed
+                setTimeout(() => {
+                    if (!localStorage.getItem('installBannerDismissed') && !isRunningStandalone()) {
+                        showInstallBanner();
+                    }
+                }, 3000);
             });
+        } else {
+            // For HTTP or non-supporting browsers, just show the banner
+            setTimeout(() => {
+                if (!localStorage.getItem('installBannerDismissed') && !isRunningStandalone()) {
+                    showInstallBanner();
+                }
+            }, 3000);
         }
 
         // Make functions global
@@ -2349,11 +2335,144 @@
             }
         };
 
-        // Placeholder functions for now - these will be completed
-        function loadAdminData() {
-            console.log('Loading admin data...');
-            updateWarehouseDisplay();
+        async function loadAdminData() {
+            try {
+                console.log('Loading admin data...');
+                await Promise.all([
+                    loadAdminDashboard(),
+                    loadEvents(), 
+                    loadTeam(),
+                    loadMonitor(),
+                    loadWarehouseMaterials()
+                ]);
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                showNotification('Errore', 'Errore nel caricamento dati admin');
+            }
         }
+
+        async function loadTeam() {
+            try {
+                console.log('Loading team data...');
+                const animatorsRef = collection(db, 'animators');
+                const querySnapshot = await getDocs(animatorsRef);
+                
+                console.log('Found animators:', querySnapshot.docs.length);
+                
+                const pendingAnimators = [];
+                const approvedAnimators = [];
+                
+                querySnapshot.docs.forEach(doc => {
+                    const animator = { id: doc.id, ...doc.data() };
+                    console.log('Animator:', animator.name, 'Status:', animator.status);
+                    
+                    if (animator.status === 'pending') {
+                        pendingAnimators.push(animator);
+                    } else if (animator.status === 'approved') {
+                        approvedAnimators.push(animator);
+                    }
+                });
+                
+                console.log('Pending animators:', pendingAnimators.length);
+                console.log('Approved animators:', approvedAnimators.length);
+                
+                const teamList = document.getElementById('teamList');
+                const pendingRequests = document.getElementById('pendingRequests');
+                
+                // Load pending requests
+                if (pendingAnimators.length > 0) {
+                    console.log('Showing pending requests');
+                    pendingRequests.innerHTML = `
+                        <h3 style="margin-bottom: 15px; color: #e67e22;">⏳ Richieste in Attesa (${pendingAnimators.length})</h3>
+                        ${pendingAnimators.map(pending => `
+                            <div class="animator-item" style="border-left: 4px solid #f39c12;">
+                                <div>
+                                    <div class="animator-name">${pending.name}</div>
+                                    <div style="font-size: 12px; color: #7f8c8d;">${pending.role} - ${pending.email}</div>
+                                    <div style="font-size: 11px; color: #95a5a6;">📞 ${pending.phone || 'N/A'}</div>
+                                    <div style="font-size: 11px; color: #95a5a6;">📅 ${formatDate(pending.registeredAt.split('T')[0])} - Via: ${pending.source || 'N/A'}</div>
+                                </div>
+                                <div style="display: flex; gap: 5px;">
+                                    <button onclick="approveAnimator('${pending.id}')" style="background: #27ae60; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">✅</button>
+                                    <button onclick="rejectAnimator('${pending.id}')" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">❌</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                        <div style="margin: 20px 0; border-bottom: 1px solid #e0e0e0;"></div>
+                    `;
+                } else {
+                    console.log('No pending requests');
+                    pendingRequests.innerHTML = '<div style="padding: 10px; background: #d4edda; border-radius: 8px; margin-bottom: 20px; color: #155724;">✅ Nessuna richiesta in attesa</div>';
+                }
+                
+                // Load approved animators
+                if (approvedAnimators.length > 0) {
+                    teamList.innerHTML = approvedAnimators.map(animator => `
+                        <div class="animator-item">
+                            <div>
+                                <div class="animator-name">${animator.name}</div>
+                                <div style="font-size: 12px; color: #7f8c8d;">${animator.role} - ${animator.email}</div>
+                            </div>
+                            <div class="animator-status ${animator.workStatus === 'busy' ? 'status-busy' : 'status-available'}">
+                                ${animator.workStatus === 'busy' ? 'In Servizio' : 'Disponibile'}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    teamList.innerHTML = '<p style="color: #7f8c8d;">Nessun animatore approvato</p>';
+                }
+                
+                // Update event modal with animators
+                const animatorSelect = document.getElementById('eventAnimators');
+                if (animatorSelect) {
+                    animatorSelect.innerHTML = approvedAnimators.map(a => 
+                        `<option value="${a.name}">${a.name} - ${a.role}</option>`
+                    ).join('');
+                }
+                
+            } catch (error) {
+                console.error('Error loading team:', error);
+                showNotification('Errore', 'Errore nel caricamento team: ' + error.message);
+            }
+        }
+
+        // Make loadTeam global and add approve/reject functions
+        window.loadTeam = loadTeam;
+        
+        window.approveAnimator = async function(animatorId) {
+            try {
+                const animatorRef = doc(db, 'animators', animatorId);
+                await updateDoc(animatorRef, {
+                    status: 'approved',
+                    workStatus: 'available',
+                    approvedAt: new Date().toISOString(),
+                    approvedBy: window.currentUser.email
+                });
+                
+                showNotification('Animatore Approvato!', 'L\'animatore può ora accedere all\'app');
+                await loadTeam();
+                await loadAdminDashboard();
+            } catch (error) {
+                console.error('Error approving animator:', error);
+                showNotification('Errore', 'Errore nell\'approvazione: ' + error.message);
+            }
+        };
+
+        window.rejectAnimator = async function(animatorId) {
+            if (!confirm('Sei sicuro di voler rifiutare questa registrazione?')) {
+                return;
+            }
+            
+            try {
+                await deleteDoc(doc(db, 'animators', animatorId));
+                showNotification('Registrazione Rifiutata', 'La richiesta è stata eliminata');
+                await loadTeam();
+                await loadAdminDashboard();
+            } catch (error) {
+                console.error('Error rejecting animator:', error);
+                showNotification('Errore', 'Errore nel rifiuto: ' + error.message);
+            }
+        };
 
         function loadAnimatorEvents() {
             console.log('Loading animator events...');
