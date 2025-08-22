@@ -1203,40 +1203,73 @@
             registerBtn.textContent = 'Registrazione...';
             
             try {
+                // First check if email already exists in Firestore
+                const animatorsRef = collection(db, 'animators');
+                const q = query(animatorsRef, where('email', '==', email));
+                const existingSnapshot = await getDocs(q);
+                
+                if (!existingSnapshot.empty) {
+                    showNotification('Errore', 'Email già registrata');
+                    registerBtn.disabled = false;
+                    registerBtn.textContent = 'Registrati';
+                    return;
+                }
+                
                 // Create user account
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                await signOut(auth); // Sign out immediately
+                const uid = userCredential.user.uid;
                 
-                // Add to pending animators
-                await addDoc(collection(db, 'animators'), {
-                    name: name,
-                    email: email,
-                    phone: phone,
-                    role: role,
-                    source: source,
-                    status: 'pending',
-                    uid: userCredential.user.uid,
-                    registeredAt: new Date().toISOString()
-                });
-                
-                showNotification('Registrazione Completata!', 'Attendi l\'approvazione dell\'amministratore');
-                
-                // Clear form and go back to login
-                document.getElementById('regFullName').value = '';
-                document.getElementById('regEmail').value = '';
-                document.getElementById('regPhone').value = '';
-                document.getElementById('regPassword').value = '';
-                document.getElementById('regPasswordConfirm').value = '';
-                
-                setTimeout(() => showLogin(), 2000);
-                
-            } catch (error) {
-                console.error('Registration error:', error);
-                if (error.code === 'auth/email-already-in-use') {
-                    showNotification('Errore', 'Email già registrata');
-                } else {
-                    showNotification('Errore', 'Errore durante la registrazione');
+                try {
+                    // Add to pending animators in Firestore
+                    await addDoc(collection(db, 'animators'), {
+                        name: name,
+                        email: email,
+                        phone: phone,
+                        role: role,
+                        source: source,
+                        status: 'pending',
+                        uid: uid,
+                        registeredAt: new Date().toISOString()
+                    });
+                    
+                    // Sign out immediately after successful registration
+                    await signOut(auth);
+                    
+                    showNotification('Registrazione Completata!', 'Attendi l\'approvazione dell\'amministratore');
+                    
+                    // Clear form and go back to login
+                    document.getElementById('regFullName').value = '';
+                    document.getElementById('regEmail').value = '';
+                    document.getElementById('regPhone').value = '';
+                    document.getElementById('regPassword').value = '';
+                    document.getElementById('regPasswordConfirm').value = '';
+                    
+                    setTimeout(() => showLogin(), 2000);
+                    
+                } catch (firestoreError) {
+                    console.error('Firestore error:', firestoreError);
+                    // If Firestore fails, delete the created user account
+                    try {
+                        await userCredential.user.delete();
+                        showNotification('Errore', 'Errore nel salvare i dati. Riprova.');
+                    } catch (deleteError) {
+                        console.error('Error deleting user:', deleteError);
+                        showNotification('Errore', 'Errore durante la registrazione. Contatta l\'amministratore.');
+                    }
                 }
+                
+            } catch (authError) {
+                console.error('Auth error:', authError);
+                if (authError.code === 'auth/email-already-in-use') {
+                    showNotification('Errore', 'Email già registrata');
+                } else if (authError.code === 'auth/weak-password') {
+                    showNotification('Errore', 'Password troppo debole');
+                } else if (authError.code === 'auth/invalid-email') {
+                    showNotification('Errore', 'Email non valida');
+                } else {
+                    showNotification('Errore', 'Errore durante la registrazione: ' + authError.message);
+                }
+            } finally {
                 registerBtn.disabled = false;
                 registerBtn.textContent = 'Registrati';
             }
@@ -1488,6 +1521,368 @@
         window.loadTeam = loadTeam;
         window.loadMonitor = loadMonitor;
 
+        // Complete admin functions
+        window.approveAnimator = async function(animatorId) {
+            try {
+                const animatorRef = doc(db, 'animators', animatorId);
+                await updateDoc(animatorRef, {
+                    status: 'approved',
+                    approvedAt: new Date().toISOString()
+                });
+                
+                showNotification('Animatore Approvato!', 'L\'animatore può ora accedere all\'app');
+                await loadTeam();
+                await loadAdminDashboard();
+            } catch (error) {
+                console.error('Error approving animator:', error);
+                showNotification('Errore', 'Errore nell\'approvazione');
+            }
+        };
+
+        window.rejectAnimator = async function(animatorId) {
+            if (!confirm('Sei sicuro di voler rifiutare questa registrazione?')) {
+                return;
+            }
+            
+            try {
+                // Get animator data before deleting
+                const animatorRef = doc(db, 'animators', animatorId);
+                const animatorDoc = await animatorRef.get();
+                
+                if (animatorDoc.exists()) {
+                    const animatorData = animatorDoc.data();
+                    
+                    // Delete from Firestore
+                    await deleteDoc(animatorRef);
+                    
+                    // Try to delete from Authentication if UID exists
+                    if (animatorData.uid) {
+                        try {
+                            // Note: Deleting users from client-side requires admin SDK
+                            // For now, we just remove from Firestore
+                            console.log('User should be manually deleted from Authentication');
+                        } catch (authError) {
+                            console.log('Could not delete from auth:', authError);
+                        }
+                    }
+                    
+                    showNotification('Registrazione Rifiutata', 'La richiesta è stata eliminata');
+                    await loadTeam();
+                    await loadAdminDashboard();
+                }
+            } catch (error) {
+                console.error('Error rejecting animator:', error);
+                showNotification('Errore', 'Errore nel rifiuto');
+            }
+        };
+
+        window.saveEvent = async function() {
+            try {
+                const event = {
+                    date: document.getElementById('eventDate').value,
+                    time: document.getElementById('eventTime').value,
+                    type: document.getElementById('eventType').value,
+                    package: document.getElementById('eventPackage').value,
+                    address: document.getElementById('eventAddress').value,
+                    animators: Array.from(document.getElementById('eventAnimators').selectedOptions).map(o => o.value),
+                    createdAt: new Date().toISOString(),
+                    createdBy: window.currentUser.email
+                };
+                
+                if (!event.date || !event.time || !event.address) {
+                    showNotification('Errore', 'Compila tutti i campi obbligatori');
+                    return;
+                }
+                
+                await addDoc(collection(db, 'events'), event);
+                
+                closeModal('eventModal');
+                showNotification('Evento Creato!', 'Nuovo evento aggiunto con successo');
+                await loadEvents();
+                await loadAdminDashboard();
+                
+            } catch (error) {
+                console.error('Error saving event:', error);
+                showNotification('Errore', 'Errore nel salvare l\'evento');
+            }
+        };
+
+        window.deleteEvent = async function(eventId) {
+            if (!confirm('Sei sicuro di voler eliminare questo evento?')) {
+                return;
+            }
+            
+            try {
+                await deleteDoc(doc(db, 'events', eventId));
+                showNotification('Evento Eliminato', 'Evento rimosso con successo');
+                await loadEvents();
+                await loadAdminDashboard();
+            } catch (error) {
+                console.error('Error deleting event:', error);
+                showNotification('Errore', 'Errore nell\'eliminazione');
+            }
+        };
+
+        window.saveAnimator = async function() {
+            try {
+                const animator = {
+                    name: document.getElementById('animatorFullName').value,
+                    email: document.getElementById('animatorEmail').value,
+                    phone: document.getElementById('animatorPhone').value,
+                    role: document.getElementById('animatorRole').value,
+                    status: 'approved',
+                    workStatus: 'available',
+                    createdAt: new Date().toISOString(),
+                    createdBy: window.currentUser.email
+                };
+                
+                if (!animator.name || !animator.email) {
+                    showNotification('Errore', 'Nome ed email sono obbligatori');
+                    return;
+                }
+                
+                await addDoc(collection(db, 'animators'), animator);
+                
+                closeModal('animatorModal');
+                showNotification('Animatore Aggiunto!', `${animator.name} è stato aggiunto al team`);
+                await loadTeam();
+                await loadAdminDashboard();
+                
+            } catch (error) {
+                console.error('Error saving animator:', error);
+                showNotification('Errore', 'Errore nel salvare l\'animatore');
+            }
+        };
+
+        // Animator functions
+        window.loadAnimatorEvents = async function() {
+            try {
+                const eventsRef = collection(db, 'events');
+                const querySnapshot = await getDocs(eventsRef);
+                
+                const myEventsList = document.getElementById('myEventsList');
+                const noTurni = document.getElementById('noTurni');
+                
+                // Filter events assigned to current animator
+                const myEvents = querySnapshot.docs.filter(doc => {
+                    const event = doc.data();
+                    return event.animators && event.animators.includes(window.currentUser.name);
+                }).map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                if (myEvents.length === 0) {
+                    myEventsList.style.display = 'none';
+                    noTurni.style.display = 'block';
+                } else {
+                    myEventsList.style.display = 'block';
+                    noTurni.style.display = 'none';
+                    
+                    myEventsList.innerHTML = myEvents.map(event => `
+                        <div class="event-card">
+                            <div class="event-header">
+                                <div class="event-date">${formatDate(event.date)}</div>
+                                <div class="event-type">${event.package}</div>
+                            </div>
+                            <div class="event-info">
+                                <span class="event-info-icon">🎊</span>
+                                ${event.type}
+                            </div>
+                            <div class="event-info">
+                                <span class="event-info-icon">⏰</span>
+                                ${event.time}
+                            </div>
+                            <div class="event-info">
+                                <span class="event-info-icon">📍</span>
+                                ${event.address}
+                            </div>
+                            <button class="btn-action btn-start" onclick="startWork('${event.id}')">
+                                🚀 Inizia Turno
+                            </button>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading animator events:', error);
+                showNotification('Errore', 'Errore nel caricamento eventi');
+            }
+        };
+
+        window.loadWorkHistory = async function() {
+            try {
+                const workLogsRef = collection(db, 'workLogs');
+                const q = query(workLogsRef, 
+                    where('animatorId', '==', window.currentUser.id),
+                    where('endTime', '!=', null),
+                    orderBy('endTime', 'desc')
+                );
+                const querySnapshot = await getDocs(q);
+                
+                const workHistory = document.getElementById('workHistory');
+                const noHistory = document.getElementById('noHistory');
+                
+                if (querySnapshot.empty) {
+                    workHistory.style.display = 'none';
+                    noHistory.style.display = 'block';
+                } else {
+                    workHistory.style.display = 'block';
+                    noHistory.style.display = 'none';
+                    
+                    workHistory.innerHTML = querySnapshot.docs.map(doc => {
+                        const log = doc.data();
+                        return `
+                            <div class="event-card">
+                                <div class="event-header">
+                                    <div class="event-date">${formatDate(log.startTime)}</div>
+                                    <div class="event-type">Completato</div>
+                                </div>
+                                <div class="event-info">
+                                    <span class="event-info-icon">⏱️</span>
+                                    Durata: ${Math.round(log.duration / 3600000)}h ${Math.round((log.duration % 3600000) / 60000)}min
+                                </div>
+                                <div class="event-info">
+                                    <span class="event-info-icon">📦</span>
+                                    Materiali: ${log.materials ? log.materials.length : 0} items
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (error) {
+                console.error('Error loading work history:', error);
+                showNotification('Errore', 'Errore nel caricamento storico');
+            }
+        };
+
+        window.startWork = async function(eventId) {
+            if (!confirm('Confermi di iniziare il turno?')) {
+                return;
+            }
+            
+            try {
+                window.currentEventId = eventId;
+                window.workStartTime = new Date();
+                
+                // Create work log
+                const workLog = {
+                    eventId: eventId,
+                    animatorId: window.currentUser.id,
+                    animatorName: window.currentUser.name,
+                    startTime: window.workStartTime.toISOString(),
+                    materials: []
+                };
+                
+                await addDoc(collection(db, 'workLogs'), workLog);
+                
+                // Update animator status
+                const animatorsRef = collection(db, 'animators');
+                const q = query(animatorsRef, where('email', '==', window.currentUser.email));
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    const animatorDoc = querySnapshot.docs[0];
+                    await updateDoc(doc(db, 'animators', animatorDoc.id), {
+                        workStatus: 'busy'
+                    });
+                }
+                
+                // Start timer
+                startTimer();
+                
+                // Switch to active tab
+                document.querySelectorAll('#animatorApp .tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('#animatorApp .section').forEach(s => s.classList.remove('active'));
+                document.querySelector('#animatorApp .tab:nth-child(2)').classList.add('active');
+                document.getElementById('animator-active').classList.add('active');
+                
+                showNotification('Turno Iniziato!', 'Timer avviato. Buon lavoro!');
+                
+            } catch (error) {
+                console.error('Error starting work:', error);
+                showNotification('Errore', 'Errore nell\'avvio del turno');
+            }
+        };
+
+        window.completeWork = async function() {
+            if (!window.workStartTime) {
+                showNotification('Errore', 'Nessun turno attivo');
+                return;
+            }
+            
+            if (!confirm('Confermi di aver completato il turno e rimesso tutto in magazzino?')) {
+                return;
+            }
+            
+            try {
+                clearInterval(window.workTimer);
+                const endTime = new Date();
+                const duration = endTime - window.workStartTime;
+                
+                // Update work log
+                const workLogsRef = collection(db, 'workLogs');
+                const q = query(workLogsRef, 
+                    where('animatorId', '==', window.currentUser.id),
+                    where('endTime', '==', null)
+                );
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    const workLogDoc = querySnapshot.docs[0];
+                    await updateDoc(doc(db, 'workLogs', workLogDoc.id), {
+                        endTime: endTime.toISOString(),
+                        duration: duration,
+                        materials: window.materials
+                    });
+                }
+                
+                // Update animator status
+                const animatorsRef = collection(db, 'animators');
+                const animatorQuery = query(animatorsRef, where('email', '==', window.currentUser.email));
+                const animatorSnapshot = await getDocs(animatorQuery);
+                
+                if (!animatorSnapshot.empty) {
+                    const animatorDoc = animatorSnapshot.docs[0];
+                    await updateDoc(doc(db, 'animators', animatorDoc.id), {
+                        workStatus: 'available'
+                    });
+                }
+                
+                const hours = Math.floor(duration / 3600000);
+                const minutes = Math.floor((duration % 3600000) / 60000);
+                
+                showNotification('Turno Completato!', `Durata: ${hours}h ${minutes}min`);
+                
+                // Reset
+                window.workStartTime = null;
+                window.currentEventId = null;
+                window.materials = [];
+                document.getElementById('workTimer').textContent = '00:00:00';
+                document.getElementById('materialsList').innerHTML = '';
+                
+                // Switch to history tab
+                await loadWorkHistory();
+                document.querySelectorAll('#animatorApp .tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('#animatorApp .section').forEach(s => s.classList.remove('active'));
+                document.querySelector('#animatorApp .tab:nth-child(3)').classList.add('active');
+                document.getElementById('animator-history').classList.add('active');
+                
+            } catch (error) {
+                console.error('Error completing work:', error);
+                showNotification('Errore', 'Errore nel completare il turno');
+            }
+        };
+
+        function startTimer() {
+            window.workTimer = setInterval(() => {
+                const now = new Date();
+                const diff = now - window.workStartTime;
+                const hours = Math.floor(diff / 3600000);
+                const minutes = Math.floor((diff % 3600000) / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+                
+                document.getElementById('workTimer').textContent = 
+                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }, 1000);
+        }
+
     </script>
 
     <script>
@@ -1562,63 +1957,19 @@
             document.getElementById(modalId).classList.remove('active');
         }
 
-        // Placeholder functions - will be implemented with Firebase
-        function approveAnimator(id) {
-            console.log('Approve animator:', id);
-            // Will be implemented with Firebase
-        }
-
-        function rejectAnimator(id) {
-            console.log('Reject animator:', id);
-            // Will be implemented with Firebase
-        }
-
-        function deleteEvent(id) {
-            console.log('Delete event:', id);
-            // Will be implemented with Firebase
-        }
-
-        function saveEvent() {
-            console.log('Save event');
-            // Will be implemented with Firebase
-        }
-
-        function saveAnimator() {
-            console.log('Save animator');
-            // Will be implemented with Firebase
-        }
-
-        // Animator functions
-        function loadAnimatorEvents() {
-            console.log('Load animator events');
-            // Will be implemented with Firebase
-        }
-
-        function loadWorkHistory() {
-            console.log('Load work history');
-            // Will be implemented with Firebase
-        }
-
-        function startWork(eventId) {
-            console.log('Start work:', eventId);
-            // Will be implemented with Firebase
-        }
-
-        function completeWork() {
-            console.log('Complete work');
-            // Will be implemented with Firebase
-        }
-
+        // Placeholder functions - now implemented with Firebase
         function addMaterial() {
             const input = document.getElementById('materialCode');
             const code = input.value.trim();
             
-            if (materialDatabase[code]) {
-                if (!materials.find(m => m.code === code)) {
-                    materials.push({ code, name: materialDatabase[code] });
+            if (window.materialDatabase[code]) {
+                if (!window.materials.find(m => m.code === code)) {
+                    window.materials.push({ code, name: window.materialDatabase[code] });
                     updateMaterialsList();
                     input.value = '';
-                    showNotification('Materiale Aggiunto', materialDatabase[code]);
+                    showNotification('Materiale Aggiunto', window.materialDatabase[code]);
+                } else {
+                    showNotification('Attenzione', 'Materiale già aggiunto');
                 }
             } else {
                 showNotification('Errore', 'Codice materiale non valido');
@@ -1627,7 +1978,7 @@
 
         function updateMaterialsList() {
             const list = document.getElementById('materialsList');
-            list.innerHTML = materials.map(m => `
+            list.innerHTML = window.materials.map(m => `
                 <div class="material-item">
                     <div>
                         <span class="material-code">${m.code}</span>
@@ -1639,7 +1990,7 @@
         }
 
         function removeMaterial(code) {
-            materials = materials.filter(m => m.code !== code);
+            window.materials = window.materials.filter(m => m.code !== code);
             updateMaterialsList();
         }
 
