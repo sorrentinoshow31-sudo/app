@@ -1528,8 +1528,16 @@
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('adminApp').style.display = 'block';
             document.getElementById('animatorApp').style.display = 'none';
-            loadAdminData();
-            loadWarehouseMaterials();
+            
+            console.log('🚀 Admin app shown, starting data load...');
+            
+            // Load data with delay to ensure DOM is ready
+            setTimeout(() => {
+                loadAdminData().catch(error => {
+                    console.error('💥 Failed to load admin data:', error);
+                    showNotification('Attenzione', 'Alcuni dati potrebbero non essere caricati');
+                });
+            }, 500);
         }
 
         function showAnimatorApp() {
