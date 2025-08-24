@@ -959,7 +959,7 @@
         function loadWorkHistory() {}
 
         // --- Event modal population (module) ---
-        window.loadEventModalAnimators = async function () {
+        window.populateEventAnimators = async function () {
             try {
                 const animatorsRef = collection(db, 'animators');
                 const qy = query(animatorsRef, where('status', '==', 'approved'));
@@ -1001,9 +1001,10 @@
         // --- Start app ---
         window.onload = function() { setTimeout(initializeAppData, 1000); };
         // Expose some functions to non-module
-        window.updateFirebaseStatus = updateFirebaseStatus;
-        window.loadAdminData = loadAdminData;
-        window.loadTeam = loadTeam;
+window.updateFirebaseStatus = updateFirebaseStatus;
+window.loadAdminData = loadAdminData;
+window.loadTeam = loadTeam;
+window.populateEventAnimators = window.populateEventAnimators;
         window.loadEvents = loadEvents;
         window.loadWarehouseMaterials = loadWarehouseMaterials;
         window.initializeDefaultMaterials = initializeDefaultMaterials;
@@ -1040,7 +1041,7 @@
         function openEventModal() {
             document.getElementById('eventModal').classList.add('active');
             const d = document.getElementById('eventDate'); if (d) d.valueAsDate = new Date();
-            if (window.loadEventModalAnimators) window.loadEventModalAnimators();
+            if (window.populateEventAnimators) window.populateEventAnimators();
         }
         function openAnimatorModal() { document.getElementById('animatorModal').classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
@@ -1070,8 +1071,8 @@
             document.querySelectorAll('.modal').forEach(modal => { modal.addEventListener('click', function(e){ if (e.target === this) this.classList.remove('active'); }); });
         });
 
-        // Forwarder: se non definita, definisco un no-op per evitare errori
-        if (!window.loadEventModalAnimators) window.loadEventModalAnimators = function(){};
+        // Forwarder: no-op per evitare errori se la funzione del modulo non è pronta
+if (!window.populateEventAnimators) window.populateEventAnimators = function(){};
         // Placeholder functions to avoid ReferenceError in UI
         window.deleteEvent = window.deleteEvent || function(){};
         window.editEvent = window.editEvent || function(){ showNotification('In sviluppo','Modifica eventi'); };
