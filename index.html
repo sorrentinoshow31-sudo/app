@@ -1714,11 +1714,93 @@
         }
 
         async function loadEvents() {
-            const eventsList = document.getElementById('eventsList');
-            const noEvents = document.getElementById('noEvents');
-            if (eventsList) eventsList.innerHTML = '';
-            if (noEvents) noEvents.style.display = 'block';
+            try {
+                const eventsRef = collection(db, 'events');
+                const q = query(eventsRef, orderBy('date', 'desc'));
+                const querySnapshot = await getDocs(q);
+                
+                const eventsList = document.getElementById('eventsList');
+                const noEvents = document.getElementById('noEvents');
+                
+                if (querySnapshot.empty) {
+                    if (eventsList) eventsList.innerHTML = '';
+                    if (noEvents) noEvents.style.display = 'block';
+                } else {
+                    if (noEvents) noEvents.style.display = 'none';
+                    
+                    const events = [];
+                    querySnapshot.docs.forEach(doc => {
+                        events.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    if (eventsList) {
+                        eventsList.innerHTML = events.map(event => `
+                            <div class="event-card">
+                                <div class="event-header">
+                                    <div class="event-date">${formatDate(event.date)}</div>
+                                    <div class="event-type">${event.type}</div>
+                                </div>
+                                
+                                <div class="event-info">
+                                    <span class="event-info-icon">🕐</span>
+                                    <span>${event.time}</span>
+                                </div>
+                                
+                                <div class="event-info">
+                                    <span class="event-info-icon">📍</span>
+                                    <span>${event.address}</span>
+                                </div>
+                                
+                                <div class="event-info">
+                                    <span class="event-info-icon">📦</span>
+                                    <span>Pacchetto ${event.package}</span>
+                                </div>
+                                
+                                <div class="event-info">
+                                    <span class="event-info-icon">👥</span>
+                                    <span>${event.animators.map(a => a.name).join(', ')}</span>
+                                </div>
+                                
+                                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                    <button class="btn-action btn-materials" onclick="editEvent('${event.id}')" style="background: #f39c12;">
+                                        ✏️ Modifica
+                                    </button>
+                                    <button class="btn-action btn-complete" onclick="deleteEvent('${event.id}')">
+                                        🗑️ Elimina
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error loading events:', error);
+                const eventsList = document.getElementById('eventsList');
+                const noEvents = document.getElementById('noEvents');
+                if (eventsList) eventsList.innerHTML = '<p style="color: #e74c3c;">Errore nel caricamento eventi</p>';
+                if (noEvents) noEvents.style.display = 'none';
+            }
         }
+
+        window.deleteEvent = async function(eventId) {
+            if (!confirm('Sei sicuro di voler eliminare questo evento?')) {
+                return;
+            }
+            
+            try {
+                await deleteDoc(doc(db, 'events', eventId));
+                showNotification('Evento Eliminato', 'L\'evento è stato rimosso');
+                await loadEvents();
+            } catch (error) {
+                console.error('Error deleting event:', error);
+                showNotification('Errore', 'Errore nell\'eliminazione dell\'evento');
+            }
+        };
+
+        window.editEvent = function(eventId) {
+            showNotification('Funzione in sviluppo', 'Modifica eventi presto disponibile');
+        };
 
         async function loadTeam() {
             try {
@@ -1774,8 +1856,24 @@
                     teamList.innerHTML = '<p style="color: #7f8c8d;">Nessun animatore approvato</p>';
                 }
                 
+                // Update event modal with animators
+                updateEventModalAnimators(approvedAnimators);
+                
             } catch (error) {
                 console.error('Error loading team:', error);
+            }
+        }
+
+        function updateEventModalAnimators(approvedAnimators) {
+            const animatorSelect = document.getElementById('eventAnimators');
+            if (animatorSelect && approvedAnimators) {
+                animatorSelect.innerHTML = approvedAnimators.map(animator => 
+                    `<option value="${animator.id}">${animator.name} - ${animator.role}</option>`
+                ).join('');
+                
+                if (approvedAnimators.length === 0) {
+                    animatorSelect.innerHTML = '<option disabled>Nessun animatore disponibile</option>';
+                }
             }
         }
 
@@ -2336,6 +2434,39 @@
         function openEventModal() {
             document.getElementById('eventModal').classList.add('active');
             document.getElementById('eventDate').valueAsDate = new Date();
+            
+            // Load animators when opening modal
+            loadEventModalAnimators();
+        }
+
+        async function loadEventModalAnimators() {
+            try {
+                const animatorsRef = collection(db, 'animators');
+                const q = query(animatorsRef, where('status', '==', 'approved'));
+                const querySnapshot = await getDocs(q);
+                
+                const approvedAnimators = [];
+                querySnapshot.docs.forEach(doc => {
+                    approvedAnimators.push({ id: doc.id, ...doc.data() });
+                });
+                
+                const animatorSelect = document.getElementById('eventAnimators');
+                if (animatorSelect) {
+                    if (approvedAnimators.length > 0) {
+                        animatorSelect.innerHTML = approvedAnimators.map(animator => 
+                            `<option value="${animator.id}">${animator.name} - ${animator.role}</option>`
+                        ).join('');
+                    } else {
+                        animatorSelect.innerHTML = '<option disabled>Nessun animatore disponibile - Vai nella sezione Team per aggiungerne</option>';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading animators for event modal:', error);
+                const animatorSelect = document.getElementById('eventAnimators');
+                if (animatorSelect) {
+                    animatorSelect.innerHTML = '<option disabled>Errore nel caricamento animatori</option>';
+                }
+            }
         }
 
         function openAnimatorModal() {
@@ -2346,16 +2477,117 @@
             document.getElementById(modalId).classList.remove('active');
         }
 
-        // Placeholder functions
-        function saveEvent() {
-            showNotification('Funzione in sviluppo', 'Salvataggio eventi presto disponibile');
-            closeModal('eventModal');
-        }
+        // Event management functions
+        window.saveEvent = async function() {
+            try {
+                const eventDate = document.getElementById('eventDate').value;
+                const eventTime = document.getElementById('eventTime').value;
+                const eventType = document.getElementById('eventType').value;
+                const eventPackage = document.getElementById('eventPackage').value;
+                const eventAddress = document.getElementById('eventAddress').value;
+                const animatorSelect = document.getElementById('eventAnimators');
+                
+                if (!eventDate || !eventTime || !eventAddress) {
+                    showNotification('Errore', 'Compila tutti i campi obbligatori');
+                    return;
+                }
+                
+                // Get selected animators
+                const selectedAnimators = Array.from(animatorSelect.selectedOptions).map(option => ({
+                    id: option.value,
+                    name: option.textContent
+                }));
+                
+                if (selectedAnimators.length === 0) {
+                    showNotification('Errore', 'Seleziona almeno un animatore');
+                    return;
+                }
+                
+                // Save event to Firestore
+                const eventData = {
+                    date: eventDate,
+                    time: eventTime,
+                    type: eventType,
+                    package: eventPackage,
+                    address: eventAddress,
+                    animators: selectedAnimators,
+                    status: 'scheduled',
+                    createdAt: new Date().toISOString(),
+                    createdBy: window.currentUser.email
+                };
+                
+                await addDoc(collection(db, 'events'), eventData);
+                
+                showNotification('Evento Salvato!', `Evento del ${formatDate(eventDate)} creato con successo`);
+                closeModal('eventModal');
+                
+                // Clear form
+                document.getElementById('eventDate').value = '';
+                document.getElementById('eventTime').value = '';
+                document.getElementById('eventAddress').value = '';
+                animatorSelect.selectedIndex = -1;
+                
+                // Reload events
+                await loadEvents();
+                
+            } catch (error) {
+                console.error('Error saving event:', error);
+                showNotification('Errore', 'Errore nel salvare l\'evento: ' + error.message);
+            }
+        };
 
-        function saveAnimator() {
-            showNotification('Funzione in sviluppo', 'Aggiunta manuale animatori presto disponibile');
-            closeModal('animatorModal');
-        }
+        window.saveAnimator = async function() {
+            try {
+                const name = document.getElementById('animatorFullName').value.trim();
+                const email = document.getElementById('animatorEmail').value.trim();
+                const phone = document.getElementById('animatorPhone').value.trim();
+                const role = document.getElementById('animatorRole').value;
+                
+                if (!name || !email || !phone) {
+                    showNotification('Errore', 'Compila tutti i campi obbligatori');
+                    return;
+                }
+                
+                // Check if email already exists
+                const animatorsRef = collection(db, 'animators');
+                const q = query(animatorsRef, where('email', '==', email));
+                const existingSnapshot = await getDocs(q);
+                
+                if (!existingSnapshot.empty) {
+                    showNotification('Errore', 'Email già registrata');
+                    return;
+                }
+                
+                // Save animator directly as approved (admin adding manually)
+                await addDoc(collection(db, 'animators'), {
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    role: role,
+                    status: 'approved',
+                    workStatus: 'available',
+                    source: 'admin_manual',
+                    registeredAt: new Date().toISOString(),
+                    approvedAt: new Date().toISOString(),
+                    approvedBy: window.currentUser.email
+                });
+                
+                showNotification('Animatore Aggiunto!', `${name} aggiunto al team`);
+                closeModal('animatorModal');
+                
+                // Clear form
+                document.getElementById('animatorFullName').value = '';
+                document.getElementById('animatorEmail').value = '';
+                document.getElementById('animatorPhone').value = '';
+                
+                // Reload team and update event modal
+                await loadTeam();
+                
+            } catch (error) {
+                console.error('Error saving animator:', error);
+                showNotification('Errore', 'Errore nel salvare l\'animatore: ' + error.message);
+            }
+        };
 
         function completeWork() {
             showNotification('Funzione in sviluppo', 'Completamento turni presto disponibile');
@@ -2380,10 +2612,9 @@
         window.openEventModal = openEventModal;
         window.openAnimatorModal = openAnimatorModal;
         window.closeModal = closeModal;
-        window.saveEvent = saveEvent;
-        window.saveAnimator = saveAnimator;
-        window.completeWork = completeWork;
         window.showNotification = showNotification;
+        window.deleteEvent = deleteEvent;
+        window.editEvent = editEvent;
     </script>
 </body>
 </html>
