@@ -236,7 +236,7 @@
                 <h1 class="header-title">🎉 Sorrentino Show</h1>
                 <div class="user-badge">Admin</div>
             </div>
-            $1
+            
                 <div class="tab" onclick="switchTab('calendar','admin')">Calendario</div>
             </div>
         </div>
@@ -374,10 +374,13 @@
                 <div class="user-badge" id="animatorName">Animatore</div>
             </div>
             <div class="tabs">
-                <div class="tab active" onclick="switchTab('turni','animator')">Turni</div>
-                <div class="tab" onclick="switchTab('active','animator')">In Corso</div>
-                <div class="tab" onclick="switchTab('history','animator')">Storico</div>
-            </div>
+    <div class="tab active" onclick="switchTab('dashboard','admin')">Dashboard</div>
+    <div class="tab" onclick="switchTab('events','admin')">Eventi</div>
+    <div class="tab" onclick="switchTab('team','admin')">Team</div>
+    <div class="tab" onclick="switchTab('warehouse','admin')">Magazzino</div>
+    <div class="tab" onclick="switchTab('monitor','admin')">Monitor</div>
+    <div class="tab" onclick="switchTab('calendar','admin')">Calendario</div>
+</div>
         </div>
         <div class="content">
             <div id="animator-turni" class="section active">
@@ -1229,3 +1232,4 @@ if (!window.populateEventAnimators) window.populateEventAnimators = function(){}
     </script>
 </body>
 </html>
+
