@@ -107,6 +107,15 @@
         .number-button.unavailable{ background:#f8f9fa; border-color:#e0e0e0; color:#7f8c8d; cursor:not-allowed; opacity:.5 }
         .number-button.unavailable:hover{ transform:none; background:#f8f9fa; color:#7f8c8d }
         @media (max-width:768px){ .app-container{ max-width:100% } .modal-content{ width:95% } }
+        .cal-cell{background:#fff;border:1px solid #eee;border-radius:12px;min-height:64px;padding:8px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:transform .1s ease}
+    .cal-cell:hover{transform:translateY(-1px)}
+    .cal-cell.out-month{opacity:.4}
+    .cal-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#7f8c8d}
+    .cal-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+    .cal-dot.future{background:#764ba2}
+    .cal-dot.past{background:#95a5a6}
+    .cal-count{font-size:12px;font-weight:600}
+    .cal-selected{outline:2px solid #667eea}
     </style>
 </head>
 <body>
@@ -227,14 +236,83 @@
                 <h1 class="header-title">🎉 Sorrentino Show</h1>
                 <div class="user-badge">Admin</div>
             </div>
-            <div class="tabs">
-                <div class="tab active" onclick="switchTab('dashboard','admin')">Dashboard</div>
-                <div class="tab" onclick="switchTab('events','admin')">Eventi</div>
-                <div class="tab" onclick="switchTab('team','admin')">Team</div>
-                <div class="tab" onclick="switchTab('warehouse','admin')">Magazzino</div>
-                <div class="tab" onclick="switchTab('monitor','admin')">Monitor</div>
+            $1
+                <div class="tab" onclick="switchTab('calendar','admin')">Calendario</div>
             </div>
         </div>
+
+        <div class="content">
+            <div id="admin-dashboard" class="section active">
+                <div class="stat-card"><div class="stat-value" id="todayEvents">-</div><div class="stat-label">Eventi Oggi</div></div>
+                <div class="stat-card"><div class="stat-value" id="activeAnimators">-</div><div class="stat-label">Animatori Attivi</div></div>
+                <div class="stat-card"><div class="stat-value" id="monthHours">-h</div><div class="stat-label">Ore Totali Mese</div></div>
+                <div class="stat-card" id="pendingRegistrations" style="display:none;"><div class="stat-value" id="pendingCount">0</div><div class="stat-label">Registrazioni in Attesa</div></div>
+            </div>
+            <div id="admin-events" class="section">
+                <div id="eventsList"></div>
+                <div class="empty-state" id="noEvents" style="display:none;">
+                    <div class="empty-icon">📅</div>
+                    <p>Nessun evento programmato</p>
+                    <p style="font-size:14px;">Clicca + per aggiungere un evento</p>
+                </div>
+            </div>
+            <div id="admin-calendar" class="section">
+                <div class="stat-card" style="overflow:hidden;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
+                        <button class="btn-secondary" onclick="prevMonth()" style="max-width:120px;">◀︎ Mese Prec.</button>
+                        <h3 id="calendarTitle" style="margin:0;">Calendario</h3>
+                        <button class="btn-secondary" onclick="nextMonth()" style="max-width:120px;">Mese Succ. ▶︎</button>
+                    </div>
+                    <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; font-size:12px; color:#7f8c8d; margin-bottom:8px;">
+                        <div>Lu</div><div>Ma</div><div>Me</div><div>Gi</div><div>Ve</div><div>Sa</div><div>Do</div>
+                    </div>
+                    <div id="calendarGrid" style="display:grid; grid-template-columns: repeat(7, 1fr); gap:8px;"></div>
+                    <div style="display:flex; gap:8px; margin-top:12px; font-size:12px; color:#7f8c8d;">
+                        <span style="display:inline-flex; align-items:center; gap:6px;"><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#764ba2;"></span> Futuri</span>
+                        <span style="display:inline-flex; align-items:center; gap:6px;"><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#95a5a6;"></span> Passati</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3 style="margin-bottom:10px;">Dettagli Giorno</h3>
+                    <div id="calendarDayList">Seleziona un giorno per vedere gli eventi.</div>
+                </div>
+            </div>
+            <div id="admin-team" class="section">
+                <div style="display:flex; gap:10px; margin-bottom:20px;">
+                    <button class="btn-action btn-start" onclick="openAnimatorModal()">➕ Aggiungi Animatore</button>
+                    <button class="btn-action btn-materials" onclick="loadTeam()" style="background:#3498db;">🔄 Aggiorna Team</button>
+                    <button class="btn-action" onclick="createTestAnimator()" style="background:#e67e22; color:#fff;">🧪 Test Animatore</button>
+                    <button class="btn-action" onclick="fixAnimatorStatus()" style="background:#9b59b6; color:#fff;">🔧 Fix Status</button>
+                </div>
+                <div id="pendingRequests"></div>
+                <div id="teamList"></div>
+                <div style="margin-top:20px; padding:15px; background:#f8f9fa; border-radius:10px; font-size:12px;">
+                    <strong>🔍 Debug Info:</strong>
+                    <div id="debugInfo">Caricamento...</div>
+                </div>
+            </div>
+            <div id="admin-warehouse" class="section">
+                <div class="stat-card">
+                    <h3 style="margin-bottom:15px;">📦 Gestione Magazzino</h3>
+                    <div style="display:flex; gap:10px; margin-bottom:20px;">
+                        <button class="btn-action btn-start" onclick="openMaterialModal()">➕ Aggiungi Materiale</button>
+                        <button class="btn-action btn-materials" onclick="initializeDefaultMaterials()" style="background:#f39c12;">🔄 Inizializza Materiali</button>
+                    </div>
+                    <div id="warehouseList"></div>
+                </div>
+                <div class="stat-card" style="margin-top:20px;">
+                    <h3 style="margin-bottom:15px;">📊 Materiali in Uso</h3>
+                    <div id="materialsInUse"></div>
+                </div>
+            </div>
+            <div id="admin-monitor" class="section">
+                <div class="stat-card"><h3 style="margin-bottom:15px;">🔴 Attività Live</h3><div id="liveActivities"></div></div>
+                <div class="stat-card" style="margin-top:20px;"><h3 style="margin-bottom:15px;">💰 Turni Completati - Pagamenti</h3><div id="completedShifts"></div></div>
+                <div class="stat-card" style="margin-top:20px;"><h3 style="margin-bottom:15px;">📊 Storico Attività</h3><div id="activityLog"></div></div>
+            </div>
+        </div>
+        <button class="fab" onclick="openEventModal()">+</button>
+    </div>
         <div class="content">
             <div id="admin-dashboard" class="section active">
                 <div class="stat-card"><div class="stat-value" id="todayEvents">-</div><div class="stat-label">Eventi Oggi</div></div>
@@ -674,7 +752,7 @@
 
         // --- Admin data loaders ---
         async function loadAdminData() {
-            await Promise.all([ loadAdminDashboard(), loadEvents(), loadTeam(), loadWarehouseMaterials() ]);
+            await Promise.all([ loadAdminDashboard(), loadEvents(), loadTeam(), loadWarehouseMaterials(), loadCalendarData() ]);
         }
         async function loadAdminDashboard() {
             document.getElementById('todayEvents').textContent = '0';
@@ -973,6 +1051,74 @@
                 const sel = document.getElementById('eventAnimators'); if (sel) sel.innerHTML = '<option disabled>Errore nel caricamento animatori</option>';
             }
         };
+
+        // --- Calendar Data ---
+        let calState = { year: null, month: null, eventsByDate: {} };
+        function pad2(n){return n<10?`0${n}`:`${n}`}
+        function ymd(d){return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`}
+        function monthKey(y,m){return `${y}-${pad2(m+1)}`}
+        async function loadCalendarData(){
+            try{
+                const eventsRef = collection(db,'events');
+                const qs = await getDocs(eventsRef); // all events
+                const map = {};
+                qs.docs.forEach(docu=>{ const e = docu.data(); if(!e.date) return; (map[e.date] ||= []).push({ id: docu.id, ...e }); });
+                calState.eventsByDate = map;
+                const today = new Date();
+                if(calState.year===null){ calState.year = today.getFullYear(); calState.month = today.getMonth(); }
+                renderCalendar();
+            }catch(e){ console.error('Calendar load error', e); }
+        }
+        function setMonth(y,m){ calState.year=y; calState.month=m; renderCalendar(); }
+        function prevMonth(){ let y=calState.year, m=calState.month-1; if(m<0){m=11;y--;} setMonth(y,m);} window.prevMonth=prevMonth;
+        function nextMonth(){ let y=calState.year, m=calState.month+1; if(m>11){m=0;y++;} setMonth(y,m);} window.nextMonth=nextMonth;
+        function renderCalendar(){
+            const title = document.getElementById('calendarTitle');
+            const grid = document.getElementById('calendarGrid');
+            if(!title||!grid) return;
+            const y = calState.year, m = calState.month;
+            const monthNames = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+            title.textContent = `${monthNames[m]} ${y}`;
+            grid.innerHTML='';
+            const first = new Date(y,m,1);
+            const start = (first.getDay()+6)%7; // convert to Mon=0
+            const daysInMonth = new Date(y,m+1,0).getDate();
+            const prevDays = new Date(y,m,0).getDate();
+            const cells = [];
+            // previous month fillers
+            for(let i=0;i<start;i++){ cells.push({ day: prevDays-start+i+1, out:true, date: new Date(y,m-1,i - start + prevDays +1) }); }
+            // current month
+            for(let d=1; d<=daysInMonth; d++){ cells.push({ day:d, out:false, date:new Date(y,m,d)}); }
+            // next month fillers
+            while(cells.length%7!==0) { const idx=cells.length - daysInMonth - start +1; cells.push({ day: idx, out:true, date: new Date(y,m+1, idx) }); }
+            const todayStr = ymd(new Date());
+            cells.forEach(c=>{
+                const el = document.createElement('div'); el.className = 'cal-cell'+(c.out?' out-month':'');
+                const dstr = ymd(c.date);
+                const items = calState.eventsByDate[dstr] || [];
+                const isPast = c.date < new Date(new Date().toDateString());
+                const dotClass = isPast ? 'past' : 'future';
+                el.innerHTML = `<div class="cal-head"><span>${pad2(c.day)}</span><span class="cal-count">${items.length?items.length+'×':''}</span></div>` +
+                               (items.length? `<div>${items.slice(0,3).map(_=>`<span class='cal-dot ${dotClass}'></span>`).join(' ')}</div>` : '<div style="min-height:8px;"></div>');
+                el.onclick = ()=> selectDay(dstr);
+                if(dstr===todayStr && !c.out) el.classList.add('cal-selected');
+                grid.appendChild(el);
+            });
+            // default selection
+            selectDay(ymd(new Date(y,m,1)));
+        }
+        function selectDay(dstr){
+            const list = document.getElementById('calendarDayList'); if(!list) return;
+            const items = calState.eventsByDate[dstr] || [];
+            if(!items.length){ list.innerHTML = '<p style="color:#7f8c8d;">Nessun evento per questo giorno.</p>'; return; }
+            list.innerHTML = items.sort((a,b)=> (a.time||'').localeCompare(b.time||'')).map(e=>`
+                <div class="event-card" style="margin:8px 0;">
+                    <div class="event-header"><div class="event-date">${(e.time||'--:--')}</div><div class="event-type">${e.type||''}</div></div>
+                    <div class="event-info"><span class="event-info-icon">📍</span><span>${e.address||''}</span></div>
+                    <div class="event-info"><span class="event-info-icon">📦</span><span>${e.package||''}</span></div>
+                    <div class="event-info"><span class="event-info-icon">👥</span><span>${(e.animators||[]).map(a=>a.name).join(', ')}</span></div>
+                </div>`).join('');
+        }
 
         // --- Event CRUD ---
         window.saveEvent = async function() {
