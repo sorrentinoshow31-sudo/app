@@ -927,9 +927,18 @@
                     <button class="btn-action btn-materials" onclick="loadTeam()" style="background: #3498db;">
                         🔄 Aggiorna Team
                     </button>
+                    <button class="btn-action" onclick="createTestAnimator()" style="background: #e67e22; color: white;">
+                        🧪 Test Animatore
+                    </button>
                 </div>
                 <div id="pendingRequests"></div>
                 <div id="teamList"></div>
+                
+                <!-- Debug info -->
+                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px; font-size: 12px;">
+                    <strong>🔍 Debug Info:</strong>
+                    <div id="debugInfo">Caricamento...</div>
+                </div>
             </div>
 
             <!-- Warehouse -->
@@ -1491,17 +1500,22 @@
             document.getElementById('animatorApp').style.display = 'none';
         }
 
+        // Force reload animators when admin app loads
         function showAdminApp() {
             document.getElementById('loadingScreen').classList.remove('show');
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('adminApp').style.display = 'block';
             document.getElementById('animatorApp').style.display = 'none';
             
-            setTimeout(() => {
-                loadAdminData().catch(error => {
-                    console.error('Failed to load admin data:', error);
+            setTimeout(async () => {
+                try {
+                    console.log('🚀 Loading admin data...');
+                    await loadAdminData();
+                    console.log('✅ Admin data loaded successfully');
+                } catch (error) {
+                    console.error('💥 Failed to load admin data:', error);
                     showNotification('Attenzione', 'Alcuni dati potrebbero non essere caricati');
-                });
+                }
             }, 500);
         }
 
@@ -2265,10 +2279,61 @@
             }
         };
 
-        // Global functions
-        window.loadTeam = loadTeam;
-        window.loadWarehouseMaterials = loadWarehouseMaterials;
-        window.initializeDefaultMaterials = initializeDefaultMaterials;
+        // Add test function to create sample animator
+        window.createTestAnimator = async function() {
+            try {
+                console.log('🧪 Creating test animator...');
+                await addDoc(collection(db, 'animators'), {
+                    name: 'Mario Test',
+                    email: 'mario.test@esempio.com',
+                    phone: '+39 333 1234567',
+                    role: 'Animatore Senior',
+                    status: 'approved',
+                    workStatus: 'available',
+                    source: 'test',
+                    registeredAt: new Date().toISOString(),
+                    approvedAt: new Date().toISOString(),
+                    approvedBy: 'admin@sorrentino.it'
+                });
+                
+                console.log('✅ Test animator created');
+                showNotification('Test Completato', 'Animatore di test aggiunto');
+                await loadTeam();
+                
+            } catch (error) {
+                console.error('❌ Error creating test animator:', error);
+                showNotification('Errore', 'Errore nella creazione: ' + error.message);
+            }
+        };
+
+        // Add button to manually test
+        window.testAnimatorLoading = async function() {
+            console.log('🔍 Testing animator loading...');
+            try {
+                const animatorsRef = collection(db, 'animators');
+                const querySnapshot = await getDocs(animatorsRef);
+                
+                console.log('📊 Total documents in animators collection:', querySnapshot.docs.length);
+                
+                querySnapshot.docs.forEach(doc => {
+                    const data = doc.data();
+                    console.log('👤 Animator:', {
+                        id: doc.id,
+                        name: data.name,
+                        status: data.status,
+                        role: data.role
+                    });
+                });
+                
+                // Test approved query
+                const approvedQuery = query(animatorsRef, where('status', '==', 'approved'));
+                const approvedSnapshot = await getDocs(approvedQuery);
+                console.log('✅ Approved animators:', approvedSnapshot.docs.length);
+                
+            } catch (error) {
+                console.error('❌ Test failed:', error);
+            }
+        };
 
         // Placeholder functions
         function loadAnimatorEvents() {}
@@ -2347,28 +2412,36 @@
             }
         }
 
-        if ('serviceWorker' in navigator && location.protocol === 'https:') {
-            window.addEventListener('load', async () => {
-                try {
-                    const registration = await navigator.serviceWorker.register('/sw.js');
-                    console.log('ServiceWorker registration successful');
-                } catch (error) {
-                    console.log('ServiceWorker registration failed: ', error);
-                }
-                
-                setTimeout(() => {
-                    if (!localStorage.getItem('installBannerDismissed') && !isRunningStandalone()) {
-                        showInstallBanner();
-                    }
-                }, 3000);
-            });
-        } else {
-            setTimeout(() => {
-                if (!localStorage.getItem('installBannerDismissed') && !isRunningStandalone()) {
-                    showInstallBanner();
-                }
-            }, 3000);
-        }
+        // Commented out ServiceWorker registration to avoid 404 errors
+        // if ('serviceWorker' in navigator && location.protocol === 'https:') {
+        //     window.addEventListener('load', async () => {
+        //         try {
+        //             const registration = await navigator.serviceWorker.register('/sw.js');
+        //             console.log('ServiceWorker registration successful');
+        //         } catch (error) {
+        //             console.log('ServiceWorker registration failed: ', error);
+        //         }
+        //         
+        //         setTimeout(() => {
+        //             if (!localStorage.getItem('installBannerDismissed') && !isRunningStandalone()) {
+        //                 showInstallBanner();
+        //             }
+        //         }, 3000);
+        //     });
+        // } else {
+        //     setTimeout(() => {
+        //         if (!localStorage.getItem('installBannerDismissed') && !isRunningStandalone()) {
+        //             showInstallBanner();
+        //         }
+        //     }, 3000);
+        // }
+
+        // Simplified installation banner without ServiceWorker
+        setTimeout(() => {
+            if (!localStorage.getItem('installBannerDismissed') && !isRunningStandalone()) {
+                showInstallBanner();
+            }
+        }, 3000);
 
         window.installApp = installApp;
         window.dismissInstallBanner = dismissInstallBanner;
