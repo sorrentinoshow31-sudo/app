@@ -32,11 +32,11 @@
         .form-label { 
             display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 500;
         }
-        .form-input, .form-select { 
+        .form-input, .form-select, .form-textarea { 
             width: 100%; padding: 12px; border: 2px solid #e0e0e0; 
             border-radius: 10px; font-size: 16px;
         }
-        .form-input:focus, .form-select:focus { 
+        .form-input:focus, .form-select:focus, .form-textarea:focus { 
             outline: none; border-color: #667eea;
         }
         .btn-login { 
@@ -65,7 +65,7 @@
         }
         .tab { 
             flex: 1; padding: 15px; text-align: center; cursor: pointer; 
-            color: #764ba2; font-weight: 500; position: relative;
+            color: #764ba2; font-weight: 500; position: relative; font-size: 12px;
         }
         .tab.active { color: #667eea; }
         .tab.active::after { 
@@ -144,6 +144,149 @@
             padding: 5px 10px; border-radius: 5px; font-size: 10px; z-index: 100;
         }
         .firebase-status.connected { background: rgba(46, 125, 50, 0.8); }
+
+        /* Magazzino Styles */
+        .material-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #27ae60;
+        }
+        .material-item.low-stock {
+            border-left-color: #f39c12;
+        }
+        .material-item.out-of-stock {
+            border-left-color: #e74c3c;
+        }
+        .material-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .material-code {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .material-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        .material-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+        .material-quantity {
+            font-size: 18px;
+            font-weight: 600;
+            color: #27ae60;
+        }
+        .material-quantity.low {
+            color: #f39c12;
+        }
+        .material-quantity.zero {
+            color: #e74c3c;
+        }
+        .material-details {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        .material-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .material-grid-item {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .material-grid-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .material-grid-item.selected {
+            border-color: #27ae60;
+            background: #d4edda;
+        }
+        .material-grid-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .material-grid-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+        .material-grid-code {
+            font-size: 10px;
+            color: #7f8c8d;
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .material-grid-stock {
+            font-size: 10px;
+            color: #27ae60;
+            margin-top: 4px;
+        }
+        .selected-materials {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .selected-material-item {
+            background: #d4edda;
+            border: 1px solid #27ae60;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stats-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card-small {
+            flex: 1;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .stat-label-small {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        .section-title { 
+            font-size: 18px; font-weight: 600; color: #2c3e50; 
+            margin-bottom: 15px; display: flex; align-items: center; gap: 8px;
+        }
     </style>
 </head>
 <body>
@@ -195,6 +338,7 @@
             <div class="tabs">
                 <div class="tab active" onclick="switchTab('dashboard', 'admin')">Dashboard</div>
                 <div class="tab" onclick="switchTab('events', 'admin')">Eventi</div>
+                <div class="tab" onclick="switchTab('warehouse', 'admin')">Magazzino</div>
                 <div class="tab" onclick="switchTab('team', 'admin')">Team</div>
             </div>
         </div>
@@ -220,6 +364,158 @@
                 <div style="text-align: center; padding: 40px 20px; color: #7f8c8d;" id="noEvents">
                     <div style="font-size: 48px; margin-bottom: 15px;">📅</div>
                     <p>Nessun evento programmato</p>
+                </div>
+            </div>
+
+            <div id="admin-warehouse" class="section">
+                <!-- Stats -->
+                <div class="stats-row">
+                    <div class="stat-card-small">
+                        <div class="stat-number" id="totalMaterials">12</div>
+                        <div class="stat-label-small">Materiali Totali</div>
+                    </div>
+                    <div class="stat-card-small">
+                        <div class="stat-number" id="availableMaterials">10</div>
+                        <div class="stat-label-small">Disponibili</div>
+                    </div>
+                    <div class="stat-card-small">
+                        <div class="stat-number" id="lowStockMaterials">2</div>
+                        <div class="stat-label-small">Scorte Basse</div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn-action btn-start" onclick="openMaterialModal()">
+                        ➕ Aggiungi
+                    </button>
+                    <button class="btn-action btn-materials" onclick="initializeDefaultMaterials()">
+                        🔄 Reset
+                    </button>
+                </div>
+
+                <!-- Materials List -->
+                <div class="section-title">
+                    📋 Inventario Materiali
+                </div>
+                
+                <div id="materialsList">
+                    <div class="material-item">
+                        <div class="material-header">
+                            <div style="display: flex; align-items: center;">
+                                <span class="material-code">001</span>
+                                <span class="material-icon">🎳</span>
+                                <span class="material-name">Birilli colorati</span>
+                            </div>
+                            <div class="material-quantity">5 pz</div>
+                        </div>
+                        <div class="material-details">
+                            Giochi • Set per gioco bowling - Numerati: 1, 2, 3, 4, 5
+                        </div>
+                    </div>
+
+                    <div class="material-item">
+                        <div class="material-header">
+                            <div style="display: flex; align-items: center;">
+                                <span class="material-code">002</span>
+                                <span class="material-icon">🎨</span>
+                                <span class="material-name">Set colori e pennelli</span>
+                            </div>
+                            <div class="material-quantity">3 pz</div>
+                        </div>
+                        <div class="material-details">
+                            Trucchi/Costumi • Kit per trucca bimbi - Numerati: A, B, C
+                        </div>
+                    </div>
+
+                    <div class="material-item low-stock">
+                        <div class="material-header">
+                            <div style="display: flex; align-items: center;">
+                                <span class="material-code">003</span>
+                                <span class="material-icon">🥤</span>
+                                <span class="material-name">Barattoli gioco</span>
+                            </div>
+                            <div class="material-quantity low">2 pz</div>
+                        </div>
+                        <div class="material-details">
+                            Giochi • Set per gioco colpisci barattoli - Scorte basse!
+                        </div>
+                    </div>
+
+                    <div class="material-item">
+                        <div class="material-header">
+                            <div style="display: flex; align-items: center;">
+                                <span class="material-code">004</span>
+                                <span class="material-icon">⚽</span>
+                                <span class="material-name">Pallone gonfiabile</span>
+                            </div>
+                            <div class="material-quantity">2 pz</div>
+                        </div>
+                        <div class="material-details">
+                            Sport • Palloni per giochi all'aperto - Numerati: 1, 2
+                        </div>
+                    </div>
+
+                    <div class="material-item out-of-stock">
+                        <div class="material-header">
+                            <div style="display: flex; align-items: center;">
+                                <span class="material-code">008</span>
+                                <span class="material-icon">🚦</span>
+                                <span class="material-name">Coni segnalatori</span>
+                            </div>
+                            <div class="material-quantity zero">0 pz</div>
+                        </div>
+                        <div class="material-details">
+                            Sport • Coni per percorsi - ESAURITI! Riordinare
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Selection Grid -->
+                <div class="section-title" style="margin-top: 30px;">
+                    🎯 Selezione Rapida Materiali
+                </div>
+                
+                <div class="material-grid" id="materialGrid">
+                    <div class="material-grid-item" onclick="toggleMaterial('001')">
+                        <div class="material-grid-icon">🎳</div>
+                        <div class="material-grid-name">Birilli</div>
+                        <div class="material-grid-code">001</div>
+                        <div class="material-grid-stock">5 disponibili</div>
+                    </div>
+                    <div class="material-grid-item" onclick="toggleMaterial('002')">
+                        <div class="material-grid-icon">🎨</div>
+                        <div class="material-grid-name">Colori</div>
+                        <div class="material-grid-code">002</div>
+                        <div class="material-grid-stock">3 disponibili</div>
+                    </div>
+                    <div class="material-grid-item" onclick="toggleMaterial('003')">
+                        <div class="material-grid-icon">🥤</div>
+                        <div class="material-grid-name">Barattoli</div>
+                        <div class="material-grid-code">003</div>
+                        <div class="material-grid-stock">2 disponibili</div>
+                    </div>
+                    <div class="material-grid-item" onclick="toggleMaterial('004')">
+                        <div class="material-grid-icon">⚽</div>
+                        <div class="material-grid-name">Pallone</div>
+                        <div class="material-grid-code">004</div>
+                        <div class="material-grid-stock">2 disponibili</div>
+                    </div>
+                    <div class="material-grid-item" style="opacity: 0.5; pointer-events: none;">
+                        <div class="material-grid-icon">🚦</div>
+                        <div class="material-grid-name">Coni</div>
+                        <div class="material-grid-code">008</div>
+                        <div class="material-grid-stock" style="color: #e74c3c;">Esauriti</div>
+                    </div>
+                </div>
+
+                <!-- Selected Materials -->
+                <div class="selected-materials" id="selectedMaterials" style="display: none;">
+                    <h4 style="margin-bottom: 10px;">📋 Materiali Selezionati</h4>
+                    <div id="selectedMaterialsList"></div>
+                    <button class="btn-action btn-complete" onclick="confirmMaterialSelection()">
+                        ✅ Conferma Prelievo
+                    </button>
                 </div>
             </div>
 
@@ -265,9 +561,10 @@
             </div>
         </div>
 
-        <button class="fab" onclick="openEventModal()">+</button>
+        <button class="fab" onclick="openCurrentTabModal()">+</button>
     </div>
 
+    <!-- Event Modal -->
     <div class="modal" id="eventModal">
         <div class="modal-content">
             <h2 class="modal-title">📅 Nuovo Evento</h2>
@@ -313,6 +610,56 @@
         </div>
     </div>
 
+    <!-- Material Modal -->
+    <div class="modal" id="materialModal">
+        <div class="modal-content">
+            <h2 class="modal-title">📦 Nuovo Materiale</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Codice Materiale</label>
+                <input type="text" class="form-input" id="materialCode" placeholder="es: 013" maxlength="10">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Nome Materiale</label>
+                <input type="text" class="form-input" id="materialName" placeholder="es: Set giochi da tavolo">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Icona (Emoji)</label>
+                <input type="text" class="form-input" id="materialIcon" placeholder="🎲" maxlength="2">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Quantità Disponibile</label>
+                <input type="number" class="form-input" id="materialQuantity" placeholder="1" min="1" value="1">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Categoria</label>
+                <select class="form-select" id="materialCategory">
+                    <option>Giochi</option>
+                    <option>Audio/Video</option>
+                    <option>Trucchi/Costumi</option>
+                    <option>Sport</option>
+                    <option>Accessori</option>
+                    <option>Altro</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Note</label>
+                <textarea class="form-textarea" id="materialNotes" placeholder="Descrizione opzionale..." rows="3"></textarea>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-modal btn-cancel" onclick="closeModal('materialModal')">Annulla</button>
+                <button class="btn-modal btn-save" onclick="saveMaterial()">💾 Salva Materiale</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Animator Modal -->
     <div class="modal" id="animatorModal">
         <div class="modal-content">
             <h2 class="modal-title">👤 Nuovo Animatore</h2>
@@ -348,6 +695,7 @@
         </div>
     </div>
 
+    <!-- Notification -->
     <div class="notification" id="notification">
         <div>
             <div style="font-weight: 600;" id="notificationTitle">Notifica</div>
@@ -358,6 +706,10 @@
     <div class="firebase-status connected" id="firebaseStatus">✅ Firebase Connesso</div>
 
     <script type="module">
+        // Variables
+        let selectedMaterials = [];
+        let currentActiveTab = 'dashboard';
+
         // Immediate bypass - show login after 1 second regardless of Firebase
         setTimeout(() => {
             console.log('Forcing login screen display');
@@ -445,7 +797,7 @@
             loginBtn.textContent = 'Accedi';
         };
 
-        // Other functions remain the same
+        // Event functions
         window.saveEvent = function() {
             const date = document.getElementById('eventDate').value;
             const time = document.getElementById('eventTime').value;
@@ -491,6 +843,153 @@
             document.getElementById('eventAnimators').selectedIndex = -1;
         };
 
+        // Material functions
+        window.saveMaterial = function() {
+            const code = document.getElementById('materialCode').value;
+            const name = document.getElementById('materialName').value;
+            const icon = document.getElementById('materialIcon').value;
+            const quantity = document.getElementById('materialQuantity').value;
+            const category = document.getElementById('materialCategory').value;
+            const notes = document.getElementById('materialNotes').value;
+
+            if (!code || !name || !icon) {
+                showNotification('Errore', 'Compila almeno codice, nome e icona');
+                return;
+            }
+
+            // Add to materials list
+            const materialsList = document.getElementById('materialsList');
+            const newMaterial = `
+                <div class="material-item">
+                    <div class="material-header">
+                        <div style="display: flex; align-items: center;">
+                            <span class="material-code">${code}</span>
+                            <span class="material-icon">${icon}</span>
+                            <span class="material-name">${name}</span>
+                        </div>
+                        <div class="material-quantity">${quantity} pz</div>
+                    </div>
+                    <div class="material-details">
+                        ${category}${notes ? ' • ' + notes : ''}
+                    </div>
+                </div>
+            `;
+            
+            materialsList.innerHTML += newMaterial;
+
+            // Add to grid
+            const materialGrid = document.getElementById('materialGrid');
+            const newGridItem = `
+                <div class="material-grid-item" onclick="toggleMaterial('${code}')">
+                    <div class="material-grid-icon">${icon}</div>
+                    <div class="material-grid-name">${name.split(' ')[0]}</div>
+                    <div class="material-grid-code">${code}</div>
+                    <div class="material-grid-stock">${quantity} disponibili</div>
+                </div>
+            `;
+            
+            materialGrid.innerHTML += newGridItem;
+
+            closeModal('materialModal');
+            showNotification('Materiale Aggiunto!', `${name} aggiunto al magazzino`);
+
+            // Clear form
+            document.getElementById('materialCode').value = '';
+            document.getElementById('materialName').value = '';
+            document.getElementById('materialIcon').value = '';
+            document.getElementById('materialQuantity').value = '1';
+            document.getElementById('materialNotes').value = '';
+
+            updateWarehouseStats();
+        };
+
+        window.toggleMaterial = function(code) {
+            const gridItem = document.querySelector(`[onclick="toggleMaterial('${code}')"]`);
+            if (!gridItem || gridItem.style.pointerEvents === 'none') return;
+
+            const materialName = gridItem.querySelector('.material-grid-name').textContent;
+            const materialIcon = gridItem.querySelector('.material-grid-icon').textContent;
+
+            if (gridItem.classList.contains('selected')) {
+                // Remove from selection
+                gridItem.classList.remove('selected');
+                selectedMaterials = selectedMaterials.filter(m => m.code !== code);
+            } else {
+                // Add to selection
+                gridItem.classList.add('selected');
+                selectedMaterials.push({
+                    code: code,
+                    name: materialName,
+                    icon: materialIcon
+                });
+            }
+
+            updateSelectedMaterialsList();
+        };
+
+        window.updateSelectedMaterialsList = function() {
+            const selectedSection = document.getElementById('selectedMaterials');
+            const selectedList = document.getElementById('selectedMaterialsList');
+
+            if (selectedMaterials.length === 0) {
+                selectedSection.style.display = 'none';
+                return;
+            }
+
+            selectedSection.style.display = 'block';
+            selectedList.innerHTML = selectedMaterials.map((material, index) => `
+                <div class="selected-material-item">
+                    <div>
+                        <span style="font-weight: 600;">${material.icon} ${material.name}</span>
+                        <span style="margin-left: 10px; font-size: 12px; color: #7f8c8d;">Codice: ${material.code}</span>
+                    </div>
+                    <button onclick="removeMaterial(${index})" style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">✕</button>
+                </div>
+            `).join('');
+        };
+
+        window.removeMaterial = function(index) {
+            const material = selectedMaterials[index];
+            selectedMaterials.splice(index, 1);
+
+            // Unselect from grid
+            const gridItem = document.querySelector(`[onclick="toggleMaterial('${material.code}')"]`);
+            if (gridItem) {
+                gridItem.classList.remove('selected');
+            }
+
+            updateSelectedMaterialsList();
+        };
+
+        window.confirmMaterialSelection = function() {
+            if (selectedMaterials.length === 0) {
+                showNotification('Errore', 'Seleziona almeno un materiale');
+                return;
+            }
+
+            showNotification('Prelievo Confermato!', `${selectedMaterials.length} materiali prelevati`);
+            
+            // Clear selection
+            selectedMaterials = [];
+            document.querySelectorAll('.material-grid-item.selected').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            updateSelectedMaterialsList();
+        };
+
+        window.initializeDefaultMaterials = function() {
+            showNotification('Materiali Inizializzati!', 'Magazzino ripristinato ai valori default');
+            updateWarehouseStats();
+        };
+
+        window.updateWarehouseStats = function() {
+            document.getElementById('totalMaterials').textContent = '12';
+            document.getElementById('availableMaterials').textContent = '11';
+            document.getElementById('lowStockMaterials').textContent = '1';
+        };
+
+        // Animator functions
         window.saveAnimator = function() {
             const name = document.getElementById('animatorFullName').value;
             const email = document.getElementById('animatorEmail').value;
@@ -559,6 +1058,8 @@
         }
 
         function switchTab(tabName, appType) {
+            currentActiveTab = tabName;
+            
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             
@@ -582,8 +1083,29 @@
             document.getElementById('eventDate').valueAsDate = new Date();
         }
 
+        function openMaterialModal() {
+            document.getElementById('materialModal').classList.add('active');
+        }
+
         function openAnimatorModal() {
             document.getElementById('animatorModal').classList.add('active');
+        }
+
+        function openCurrentTabModal() {
+            // Open appropriate modal based on current active tab
+            switch(currentActiveTab) {
+                case 'events':
+                    openEventModal();
+                    break;
+                case 'warehouse':
+                    openMaterialModal();
+                    break;
+                case 'team':
+                    openAnimatorModal();
+                    break;
+                default:
+                    openEventModal();
+            }
         }
 
         function closeModal(modalId) {
@@ -598,7 +1120,5 @@
             });
         });
     </script>
-</body>
-</html>
 </body>
 </html>
