@@ -358,45 +358,54 @@
     <div class="firebase-status connected" id="firebaseStatus">✅ Firebase Connesso</div>
 
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+        // Immediate bypass - show login after 1 second regardless of Firebase
+        setTimeout(() => {
+            console.log('Forcing login screen display');
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('firebaseStatus').textContent = '⚠️ Modalità Demo';
+        }, 1000);
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDSG_YYQdxWM_OXbCZNBuNKzCEV6P5vZtQ",
-            authDomain: "sorrentino-turni.firebaseapp.com",
-            projectId: "sorrentino-turni",
-            storageBucket: "sorrentino-turni.firebasestorage.app",
-            messagingSenderId: "265460676714",
-            appId: "1:265460676714:web:d88b4db67d2f95ae653213"
-        };
-
-        let app, db, auth;
-        
+        // Try Firebase but don't block the app
         try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            window.db = db;
-            window.auth = auth;
-            console.log('Firebase initialized');
-            
-            // Bypass auth check - go straight to login
-            setTimeout(() => {
-                document.getElementById('loadingScreen').style.display = 'none';
-                document.getElementById('loginScreen').style.display = 'flex';
-            }, 2000);
-            
+            import('https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js').then(({ initializeApp }) => {
+                import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js').then((firestoreModule) => {
+                    import('https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js').then((authModule) => {
+                        try {
+                            const firebaseConfig = {
+                                apiKey: "AIzaSyDSG_YYQdxWM_OXbCZNBuNKzCEV6P5vZtQ",
+                                authDomain: "sorrentino-turni.firebaseapp.com",
+                                projectId: "sorrentino-turni",
+                                storageBucket: "sorrentino-turni.firebasestorage.app",
+                                messagingSenderId: "265460676714",
+                                appId: "1:265460676714:web:d88b4db67d2f95ae653213"
+                            };
+
+                            const app = initializeApp(firebaseConfig);
+                            const db = firestoreModule.getFirestore(app);
+                            const auth = authModule.getAuth(app);
+                            
+                            window.db = db;
+                            window.auth = auth;
+                            window.firebaseReady = true;
+                            
+                            document.getElementById('firebaseStatus').textContent = '✅ Firebase Connesso';
+                            document.getElementById('firebaseStatus').className = 'firebase-status connected';
+                            console.log('Firebase initialized successfully');
+                            
+                        } catch (error) {
+                            console.log('Firebase initialization failed, using demo mode');
+                            window.firebaseReady = false;
+                        }
+                    });
+                });
+            });
         } catch (error) {
-            console.error('Firebase error:', error);
-            // Show login anyway
-            setTimeout(() => {
-                document.getElementById('loadingScreen').style.display = 'none';
-                document.getElementById('loginScreen').style.display = 'flex';
-                document.getElementById('firebaseStatus').textContent = '⚠️ Modalità Offline';
-            }, 2000);
+            console.log('Failed to load Firebase modules, using demo mode');
+            window.firebaseReady = false;
         }
 
+        // Login function that works with or without Firebase
         window.login = async function() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -406,17 +415,37 @@
                 return;
             }
             
-            // Demo login - bypass Firebase auth
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Accesso...';
+            
+            // Demo login - works always
             if (email === 'admin@sorrentino.it' && password === 'admin123') {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('adminApp').style.display = 'block';
-                showNotification('Login riuscito!', 'Benvenuto Admin');
+                setTimeout(() => {
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('adminApp').style.display = 'block';
+                    showNotification('Login riuscito!', 'Benvenuto Admin');
+                }, 500);
                 return;
             }
             
+            // Try Firebase auth if available
+            if (window.firebaseReady && window.auth) {
+                try {
+                    const { signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js');
+                    await signInWithEmailAndPassword(window.auth, email, password);
+                    return;
+                } catch (error) {
+                    console.log('Firebase auth failed, showing error');
+                }
+            }
+            
             showNotification('Errore', 'Credenziali non valide');
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Accedi';
         };
 
+        // Other functions remain the same
         window.saveEvent = function() {
             const date = document.getElementById('eventDate').value;
             const time = document.getElementById('eventTime').value;
@@ -433,7 +462,6 @@
                 return;
             }
             
-            // Add to events list
             const eventsList = document.getElementById('eventsList');
             const noEvents = document.getElementById('noEvents');
             
@@ -457,7 +485,6 @@
             closeModal('eventModal');
             showNotification('Evento Salvato!', 'Evento creato con successo');
             
-            // Clear form
             document.getElementById('eventDate').value = '';
             document.getElementById('eventTime').value = '';
             document.getElementById('eventAddress').value = '';
@@ -475,7 +502,6 @@
                 return;
             }
             
-            // Add to team list
             const teamList = document.getElementById('teamList');
             const animatorHTML = `
                 <div class="animator-item">
@@ -488,7 +514,6 @@
             `;
             teamList.innerHTML += animatorHTML;
             
-            // Add to event modal select
             const eventSelect = document.getElementById('eventAnimators');
             const option = document.createElement('option');
             option.value = Date.now();
@@ -498,7 +523,6 @@
             closeModal('animatorModal');
             showNotification('Animatore Aggiunto!', `${name} aggiunto al team`);
             
-            // Clear form
             document.getElementById('animatorFullName').value = '';
             document.getElementById('animatorEmail').value = '';
             document.getElementById('animatorPhone').value = '';
@@ -574,5 +598,7 @@
             });
         });
     </script>
+</body>
+</html>
 </body>
 </html>
