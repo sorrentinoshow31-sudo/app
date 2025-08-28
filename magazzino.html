@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magazzino - Sorrentino Show</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .app-container { 
+            max-width: 500px; margin: 0 auto; background: white; min-height: 100vh;
+        }
+        .app-header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px; color: white; position: relative;
+        }
+        .header-title { font-size: 24px; font-weight: 600; text-align: center; }
+        .back-btn { 
+            position: absolute; top: 20px; left: 20px; 
+            background: rgba(255,255,255,0.2); color: white; border: none; 
+            padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px;
+        }
+        .content { padding: 20px; }
+        
+        .stats-row { display: flex; gap: 15px; margin-bottom: 20px; }
+        .stat-card {
+            flex: 1; background: white; border-radius: 10px; padding: 15px; 
+            text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .stat-number { font-size: 24px; font-weight: 700; color: #667eea; }
+        .stat-label { font-size: 12px; color: #7f8c8d; margin-top: 5px; }
+        
+        .action-buttons {
+            display: flex; gap: 10px; margin-bottom: 20px;
+        }
+        .btn-action { 
+            flex: 1; padding: 12px; border: none; border-radius: 10px; 
+            font-weight: 600; cursor: pointer; color: white;
+        }
+        .btn-add { background: #27ae60; }
+        .btn-scan { background: #3498db; }
+        .btn-export { background: #9b59b6; }
+        
+        .search-bar {
+            position: relative; margin-bottom: 20px;
+        }
+        .search-input {
+            width: 100%; padding: 12px 40px 12px 12px; 
+            border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px;
+        }
+        .search-input:focus { outline: none; border-color: #667eea; }
+        .search-icon {
+            position: absolute; right: 12px; top: 50%; 
+            transform: translateY(-50%); color: #7f8c8d;
+        }
+        
+        .filter-tabs {
+            display: flex; margin-bottom: 20px; border-radius: 10px; 
+            overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .filter-tab {
+            flex: 1; padding: 10px; text-align: center; 
+            background: white; color: #667eea; cursor: pointer; 
+            font-weight: 500; font-size: 14px; border: none;
+        }
+        .filter-tab.active { background: #667eea; color: white; }
+        
+        .material-list { margin-bottom: 20px; }
+        .material-item {
+            background: white; border-radius: 10px; padding: 15px; 
+            margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #27ae60; position: relative;
+        }
+        .material-item.low-stock { border-left-color: #f39c12; }
+        .material-item.out-of-stock { border-left-color: #e74c3c; }
+        
+        .material-header {
+            display: flex; justify-content: space-between; 
+            align-items: flex-start; margin-bottom: 10px;
+        }
+        .material-left {
+            display: flex; align-items: center; flex: 1;
+        }
+        .material-code {
+            background: #667eea; color: white; padding: 4px 8px; 
+            border-radius: 6px; font-size: 12px; font-weight: 600; margin-right: 10px;
+        }
+        .material-icon { font-size: 24px; margin-right: 10px; }
+        .material-info { flex: 1; }
+        .material-name { font-weight: 600; color: #2c3e50; font-size: 16px; }
+        .material-category { font-size: 12px; color: #7f8c8d; margin-top: 2px; }
+        
+        .material-quantity {
+            text-align: right; 
+        }
+        .quantity-number { font-size: 18px; font-weight: 600; color: #27ae60; }
+        .quantity-number.low { color: #f39c12; }
+        .quantity-number.zero { color: #e74c3c; }
+        .quantity-label { font-size: 10px; color: #7f8c8d; }
+        
+        .material-details {
+            font-size: 12px; color: #7f8c8d; margin-top: 8px;
+            padding-top: 8px; border-top: 1px solid #f0f0f0;
+        }
+        
+        .material-actions {
+            position: absolute; top: 15px; right: 15px;
+        }
+        .action-btn {
+            background: none; border: none; color: #7f8c8d; 
+            cursor: pointer; margin-left: 8px; font-size: 16px;
+        }
+        .action-btn:hover { color: #667eea; }
+        
+        .quick-actions {
+            position: fixed; bottom: 80px; right: 20px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .quick-btn {
+            width: 50px; height: 50px; border-radius: 50%; 
+            background: rgba(102, 126, 234, 0.9); color: white; 
+            border: none; font-size: 20px; cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .fab {
+            position: fixed; bottom: 20px; right: 20px; 
+            width: 60px; height: 60px; border-radius: 50%; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; font-size: 28px; cursor: pointer; 
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4); z-index: 1000;
+        }
+        
+        .modal { 
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content { 
+            background: white; border-radius: 20px; padding: 30px; 
+            width: 90%; max-width: 450px; max-height: 90vh; overflow-y: auto;
+        }
+        .modal-title { 
+            font-size: 20px; font-weight: 600; color: #2c3e50; 
+            margin-bottom: 20px; text-align: center;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-label { 
+            display: block; margin-bottom: 5px; color: #2c3e50; font-weight: 500; font-size: 14px;
+        }
+        .form-input, .form-select, .form-textarea { 
+            width: 100%; padding: 10px; border: 2px solid #e0e0e0; 
+            border-radius: 8px; font-size: 14px;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { 
+            outline: none; border-color: #667eea;
+        }
+        .form-row {
+            display: flex; gap: 10px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-modal { 
+            flex: 1; padding: 12px; border: none; border-radius: 8px; 
+            font-weight: 600; cursor: pointer; font-size: 14px;
+        }
+        .btn-cancel { background: #e0e0e0; color: #7f8c8d; }
+        .btn-save { background: #667eea; color: white; }
+        
+        .notification { 
+            position: fixed; top: 20px; right: 20px; background: white; 
+            padding: 15px 20px; border-radius: 10px; 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2); display: none; z-index: 3000;
+        }
+        .notification.show { display: block; }
+        .notification-title { font-weight: 600; margin-bottom: 5px; }
+        .notification-message { font-size: 14px; color: #7f8c8d; }
+        
+        .empty-state {
+            text-align: center; padding: 40px 20px; color: #7f8c8d;
+        }
+        .empty-icon { font-size: 64px; margin-bottom: 15px; opacity: 0.5; }
+        
+        .batch-actions {
+            position: fixed; bottom: 0; left: 0; right: 0; 
+            background: white; padding: 15px 20px; 
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1); 
+            display: none; z-index: 1500;
+        }
+        .batch-actions.show { display: block; }
+        .batch-info { font-size: 14px; color: #7f8c8d; margin-bottom: 10px; }
+        .batch-buttons { display: flex; gap: 10px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="app-header">
+            <button class="back-btn" onclick="goBack()">← Indietro</button>
+            <h1 class="header-title">📦 Magazzino</h1>
+        </div>
+
+        <div class="content">
+            <!-- Statistics -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalMaterials">25</div>
+                    <div class="stat-label">Materiali Totali</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="availableMaterials">22</div>
+                    <div class="stat-label">Disponibili</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="lowStockMaterials">3</div>
+                    <div class="stat-label">Scorte Basse</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn-action btn-add" onclick="openAddModal()">
+                    + Aggiungi
+                </button>
+                <button class="btn-action btn-scan" onclick="startBarcodeScanner()">
+                    📷 Scansiona
+                </button>
+                <button class="btn-action btn-export" onclick="exportInventory()">
+                    📊 Export
+                </button>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="Cerca materiali..." id="searchInput" oninput="filterMaterials()">
+                <span class="search-icon">🔍</span>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="filter-tabs">
+                <button class="filter-tab active" onclick="setFilter('all')">Tutti</button>
+                <button class="filter-tab" onclick="setFilter('available')">Disponibili</button>
+                <button class="filter-tab" onclick="setFilter('low')">Scorte Basse</button>
+                <button class="filter-tab" onclick="setFilter('out')">Esauriti</button>
+            </div>
+
+            <!-- Materials List -->
+            <div class="material-list" id="materialList">
+                <!-- Sample materials will be generated by JavaScript -->
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-icon">📦</div>
+                <h3>Nessun materiale trovato</h3>
+                <p>Prova a modificare i filtri di ricerca</p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="quick-btn" onclick="quickInventoryCheck()" title="Controllo rapido inventario">✓</button>
+            <button class="quick-btn" onclick="generateReport()" title="Genera report">📋</button>
+        </div>
+
+        <!-- FAB -->
+        <button class="fab" onclick="openAddModal()">+</button>
+
+        <!-- Batch Actions Bar -->
+        <div class="batch-actions" id="batchActions">
+            <div class="batch-info" id="batchInfo">0 elementi selezionati</div>
+            <div class="batch-buttons">
+                <button class="btn-action btn-cancel" onclick="clearSelection()">Deseleziona</button>
+                <button class="btn-action btn-export" onclick="batchExport()">Export</button>
+                <button class="btn-action" onclick="batchDelete()" style="background: #e74c3c;">Elimina</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Material Modal -->
+    <div class="modal" id="materialModal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modalTitle">Aggiungi Materiale</h2>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Codice</label>
+                    <input type="text" class="form-input" id="materialCode" placeholder="es: MT001">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Barcode</label>
+                    <input type="text" class="form-input" id="materialBarcode" placeholder="Opzionale">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Nome Materiale</label>
+                <input type="text" class="form-input" id="materialName" placeholder="es: Set birilli colorati" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Categoria</label>
+                    <select class="form-select" id="materialCategory" required>
+                        <option value="">Seleziona categoria</option>
+                        <option value="Giochi">Giochi</option>
+                        <option value="Audio/Video">Audio/Video</option>
+                        <option value="Trucchi/Costumi">Trucchi/Costumi</option>
+                        <option value="Sport">Sport</option>
+                        <option value="Accessori">Accessori</option>
+                        <option value="Consumabili">Consumabili</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Icona</label>
+                    <input type="text" class="form-input" id="materialIcon" placeholder="🎳" maxlength="2">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Quantità</label>
+                    <input type="number" class="form-input" id="materialQuantity" min="0" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Soglia minima</label>
+                    <input type="number" class="form-input" id="materialThreshold" min="0" value="2">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Posizione</label>
+                    <input type="text" class="form-input" id="materialLocation" placeholder="es: Scaffale A2">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Stato</label>
+                    <select class="form-select" id="materialStatus">
+                        <option value="available">Disponibile</option>
+                        <option value="maintenance">In manutenzione</option>
+                        <option value="damaged">Danneggiato</option>
+                        <option value="lost">Smarrito</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Note</label>
+                <textarea class="form-textarea" id="materialNotes" rows="3" placeholder="Note aggiuntive..."></textarea>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-modal btn-cancel" onclick="closeModal()">Annulla</button>
+                <button class="btn-modal btn-save" onclick="saveMaterial()">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movement Modal -->
+    <div class="modal" id="movementModal">
+        <div class="modal-content">
+            <h2 class="modal-title">Movimento Materiale</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Materiale</label>
+                <input type="text" class="form-input" id="movementMaterial" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Tipo Movimento</label>
+                <select class="form-select" id="movementType" onchange="updateMovementFields()">
+                    <option value="in">Entrata</option>
+                    <option value="out">Uscita</option>
+                    <option value="adjustment">Rettifica</option>
+                    <option value="damage">Danneggiamento</option>
+                    <option value="loss">Smarrimento</option>
+                </select>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Quantità</label>
+                    <input type="number" class="form-input" id="movementQuantity" min="1" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Disponibili</label>
+                    <input type="number" class="form-input" id="movementAvailable" readonly>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Motivo</label>
+                <textarea class="form-textarea" id="movementReason" rows="2" placeholder="Descrivi il motivo del movimento..."></textarea>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-modal btn-cancel" onclick="closeModal()">Annulla</button>
+                <button class="btn-modal btn-save" onclick="saveMovement()">Conferma</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="notification-title" id="notificationTitle">Notifica</div>
+        <div class="notification-message" id="notificationMessage">Messaggio</div>
+    </div>
+
+    <script>
+        // Sample data
+        let materials = [
+            {
+                id: 1, code: 'MT001', name: 'Birilli colorati', category: 'Giochi', 
+                icon: '🎳', quantity: 5, threshold: 2, location: 'Scaffale A1', 
+                status: 'available', notes: 'Set completo numerato da 1 a 5'
+            },
+            {
+                id: 2, code: 'MT002', name: 'Set colori e pennelli', category: 'Trucchi/Costumi', 
+                icon: '🎨', quantity: 3, threshold: 1, location: 'Armadio B2', 
+                status: 'available', notes: 'Kit completo per trucca-bimbi'
+            },
+            {
+                id: 3, code: 'MT003', name: 'Barattoli per giochi', category: 'Giochi', 
+                icon: '🥤', quantity: 1, threshold: 3, location: 'Scaffale A3', 
+                status: 'available', notes: 'Set per gioco colpisci barattoli'
+            },
+            {
+                id: 4, code: 'MT004', name: 'Palloni gonfiabili', category: 'Sport', 
+                icon: '⚽', quantity: 2, threshold: 1, location: 'Deposito C1', 
+                status: 'available', notes: 'Palloni per attività all\'aperto'
+            },
+            {
+                id: 5, code: 'MT005', name: 'Coni segnalatori', category: 'Sport', 
+                icon: '🚦', quantity: 0, threshold: 5, location: 'Deposito C2', 
+                status: 'available', notes: 'Da riordinare urgentemente'
+            }
+        ];
+
+        let filteredMaterials = [...materials];
+        let selectedMaterials = new Set();
+        let currentFilter = 'all';
+        let isEditMode = false;
+        let editingMaterial = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderMaterials();
+            updateStats();
+        });
+
+        function renderMaterials() {
+            const container = document.getElementById('materialList');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (filteredMaterials.length === 0) {
+                container.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            container.style.display = 'block';
+            emptyState.style.display = 'none';
+            
+            container.innerHTML = filteredMaterials.map(material => {
+                const stockStatus = material.quantity === 0 ? 'out-of-stock' : 
+                                  material.quantity <= material.threshold ? 'low-stock' : '';
+                const quantityClass = material.quantity === 0 ? 'zero' : 
+                                    material.quantity <= material.threshold ? 'low' : '';
+                
+                return `
+                    <div class="material-item ${stockStatus}" data-id="${material.id}">
+                        <div class="material-actions">
+                            <button class="action-btn" onclick="openMovementModal(${material.id})" title="Movimento">📝</button>
+                            <button class="action-btn" onclick="editMaterial(${material.id})" title="Modifica">✏️</button>
+                            <button class="action-btn" onclick="deleteMaterial(${material.id})" title="Elimina">🗑️</button>
+                        </div>
+                        
+                        <div class="material-header">
+                            <div class="material-left">
+                                <div class="material-code">${material.code}</div>
+                                <div class="material-icon">${material.icon}</div>
+                                <div class="material-info">
+                                    <div class="material-name">${material.name}</div>
+                                    <div class="material-category">${material.category}</div>
+                                </div>
+                            </div>
+                            <div class="material-quantity">
+                                <div class="quantity-number ${quantityClass}">${material.quantity}</div>
+                                <div class="quantity-label">disponibili</div>
+                            </div>
+                        </div>
+                        
+                        <div class="material-details">
+                            📍 ${material.location || 'Posizione non specificata'} • 
+                            ⚠️ Min: ${material.threshold} • 
+                            ${material.notes || 'Nessuna nota'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateStats() {
+            const total = materials.length;
+            const available = materials.filter(m => m.quantity > 0).length;
+            const lowStock = materials.filter(m => m.quantity > 0 && m.quantity <= m.threshold).length;
+            
+            document.getElementById('totalMaterials').textContent = total;
+            document.getElementById('availableMaterials').textContent = available;
+            document.getElementById('lowStockMaterials').textContent = lowStock;
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            switch(filter) {
+                case 'all':
+                    filteredMaterials = [...materials];
+                    break;
+                case 'available':
+                    filteredMaterials = materials.filter(m => m.quantity > 0);
+                    break;
+                case 'low':
+                    filteredMaterials = materials.filter(m => m.quantity > 0 && m.quantity <= m.threshold);
+                    break;
+                case 'out':
+                    filteredMaterials = materials.filter(m => m.quantity === 0);
+                    break;
+            }
+            
+            filterMaterials(); // Apply search filter too
+        }
+
+        function filterMaterials() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            let baseFilter;
+            switch(currentFilter) {
+                case 'available': baseFilter = materials.filter(m => m.quantity > 0); break;
+                case 'low': baseFilter = materials.filter(m => m.quantity > 0 && m.quantity <= m.threshold); break;
+                case 'out': baseFilter = materials.filter(m => m.quantity === 0); break;
+                default: baseFilter = [...materials];
+            }
+            
+            filteredMaterials = baseFilter.filter(material => 
+                material.name.toLowerCase().includes(searchTerm) || 
+                material.code.toLowerCase().includes(searchTerm) || 
+                material.category.toLowerCase().includes(searchTerm)
+            );
+            
+            renderMaterials();
+        }
+
+        function openAddModal() {
+            isEditMode = false;
+            editingMaterial = null;
+            document.getElementById('modalTitle').textContent = 'Aggiungi Materiale';
+            document.getElementById('materialCode').value = generateNextCode();
+            document.getElementById('materialModal').classList.add('active');
+        }
+
+        function editMaterial(id) {
+            const material = materials.find(m => m.id === id);
+            if (!material) return;
+            
+            isEditMode = true;
+            editingMaterial = material;
+            document.getElementById('modalTitle').textContent = 'Modifica Materiale';
+            
+            document.getElementById('materialCode').value = material.code;
+            document.getElementById('materialName').value = material.name;
+            document.getElementById('materialCategory').value = material.category;
+            document.getElementById('materialIcon').value = material.icon;
+            document.getElementById('materialQuantity').value = material.quantity;
+            document.getElementById('materialThreshold').value = material.threshold;
+            document.getElementById('materialLocation').value = material.location || '';
+            document.getElementById('materialStatus').value = material.status;
+            document.getElementById('materialNotes').value = material.notes || '';
+            
+            document.getElementById('materialModal').classList.add('active');
+        }
+
+        function deleteMaterial(id) {
+            if (confirm('Sei sicuro di voler eliminare questo materiale?')) {
+                materials = materials.filter(m => m.id !== id);
+                setFilter(currentFilter); // Refresh list
+                updateStats();
+                showNotification('Eliminato', 'Materiale rimosso dal magazzino');
+            }
+        }
+
+        function saveMaterial() {
+            const code = document.getElementById('materialCode').value.trim();
+            const name = document.getElementById('materialName').value.trim();
+            const category = document.getElementById('materialCategory').value;
+            const icon = document.getElementById('materialIcon').value.trim();
+            const quantity = parseInt(document.getElementById('materialQuantity').value);
+            const threshold = parseInt(document.getElementById('materialThreshold').value);
+            const location = document.getElementById('materialLocation').value.trim();
+            const status = document.getElementById('materialStatus').value;
+            const notes = document.getElementById('materialNotes').value.trim();
+            
+            if (!name || !category || quantity < 0) {
+                showNotification('Errore', 'Compila tutti i campi obbligatori');
+                return;
+            }
+            
+            if (!isEditMode && materials.some(m => m.code === code)) {
+                showNotification('Errore', 'Codice già esistente');
+                return;
+            }
+            
+            const materialData = {
+                code, name, category, icon: icon || '📦', quantity, 
+                threshold, location, status, notes
+            };
+            
+            if (isEditMode) {
+                Object.assign(editingMaterial, materialData);
+                showNotification('Aggiornato', 'Materiale modificato con successo');
+            } else {
+                materialData.id = Date.now();
+                materials.push(materialData);
+                showNotification('Aggiunto', 'Nuovo materiale aggiunto al magazzino');
+            }
+            
+            closeModal();
+            setFilter(currentFilter);
+            updateStats();
+        }
+
+        function openMovementModal(id) {
+            const material = materials.find(m => m.id === id);
+            if (!material) return;
+            
+            document.getElementById('movementMaterial').value = `${material.code} - ${material.name}`;
+            document.getElementById('movementAvailable').value = material.quantity;
+            document.getElementById('movementModal').classList.add('active');
+            window.currentMovementMaterial = material;
+        }
+
+        function updateMovementFields() {
+            const type = document.getElementById('movementType').value;
+            const quantityInput = document.getElementById('movementQuantity');
+            
+            if (type === 'out' && window.currentMovementMaterial) {
+                quantityInput.max = window.currentMovementMaterial.quantity;
+            } else {
+                quantityInput.removeAttribute('max');
+            }
+        }
+
+        function saveMovement() {
+            const type = document.getElementById('movementType').value;
+            const quantity = parseInt(document.getElementById('movementQuantity').value);
+            const reason = document.getElementById('movementReason').value.trim();
+            
+            if (!quantity || quantity <= 0) {
+                showNotification('Errore', 'Inserisci una quantità valida');
+                return;
+            }
+            
+            const material = window.currentMovementMaterial;
+            if (!material) return;
+            
+            switch(type) {
+                case 'in':
+                    material.quantity += quantity;
+                    showNotification('Movimento registrato', `Aggiunti ${quantity} ${material.name}`);
+                    break;
+                case 'out':
+                    if (quantity > material.quantity) {
+                        showNotification('Errore', 'Quantità insufficiente');
+                        return;
+                    }
+                    material.quantity -= quantity;
+                    showNotification('Movimento registrato', `Prelevati ${quantity} ${material.name}`);
+                    break;
+                case 'adjustment':
+                    material.quantity = quantity;
+                    showNotification('Inventario aggiornato', `Quantità ${material.name} rettificata`);
+                    break;
+                case 'damage':
+                case 'loss':
+                    if (quantity > material.quantity) {
+                        showNotification('Errore', 'Quantità insufficiente');
+                        return;
+                    }
+                    material.quantity -= quantity;
+                    showNotification('Movimento registrato', `${type === 'damage' ? 'Danneggiati' : 'Smarriti'} ${quantity} ${material.name}`);
+                    break;
+            }
+            
+            closeModal();
+            setFilter(currentFilter);
+            updateStats();
+        }
+
+        function generateNextCode() {
+            const existingCodes = materials.map(m => m.code);
+            let counter = 1;
+            let newCode;
+            
+            do {
+                newCode = `MT${counter.toString().padStart(3, '0')}`;
+                counter++;
+            } while (existingCodes.includes(newCode));
+            
+            return newCode;
+        }
+
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('active');
+            });
+            
+            // Reset forms
+            document.querySelectorAll('.modal form, .modal input, .modal select, .modal textarea').forEach(element => {
+                if (element.tagName === 'FORM') {
+                    element.reset();
+                } else if (element.type !== 'button') {
+                    element.value = '';
+                }
+            });
+        }
+
+        function showNotification(title, message) {
+            document.getElementById('notificationTitle').textContent = title;
+            document.getElementById('notificationMessage').textContent = message;
+            document.getElementById('notification').classList.add('show');
+            
+            setTimeout(() => {
+                document.getElementById('notification').classList.remove('show');
+            }, 3000);
+        }
+
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        function startBarcodeScanner() {
+            showNotification('Scanner', 'Funzionalità barcode scanner in sviluppo');
+        }
+
+        function exportInventory() {
+            const csvContent = generateCSV();
+            downloadCSV(csvContent, 'inventario_magazzino.csv');
+            showNotification('Export completato', 'File CSV scaricato');
+        }
+
+        function generateCSV() {
+            const headers = ['Codice', 'Nome', 'Categoria', 'Quantità', 'Soglia', 'Posizione', 'Stato', 'Note'];
+            const rows = materials.map(m => [
+                m.code, m.name, m.category, m.quantity, m.threshold, 
+                m.location || '', m.status, m.notes || ''
+            ]);
+            
+            return [headers, ...rows].map(row => 
+                row.map(field => `"${field}"`).join(',')
+            ).join('\n');
+        }
+
+        function downloadCSV(content, filename) {
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function quickInventoryCheck() {
+            const lowStockItems = materials.filter(m => m.quantity <= m.threshold && m.quantity > 0);
+            const outOfStockItems = materials.filter(m => m.quantity === 0);
+            
+            let message = 'Controllo inventario completato:\n';
+            message += `• ${materials.length} materiali totali\n`;
+            message += `• ${lowStockItems.length} con scorte basse\n`;
+            message += `• ${outOfStockItems.length} esauriti`;
+            
+            if (lowStockItems.length > 0 || outOfStockItems.length > 0) {
+                message += '\n\nAttenzione richiesta per alcuni materiali!';
+            }
+            
+            alert(message);
+        }
+
+        function generateReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                totalMaterials: materials.length,
+                availableCount: materials.filter(m => m.quantity > 0).length,
+                lowStockCount: materials.filter(m => m.quantity > 0 && m.quantity <= m.threshold).length,
+                outOfStockCount: materials.filter(m => m.quantity === 0).length,
+                categories: [...new Set(materials.map(m => m.category))],
+                lowStockItems: materials.filter(m => m.quantity <= m.threshold).map(m => ({
+                    code: m.code,
+                    name: m.name,
+                    current: m.quantity,
+                    minimum: m.threshold
+                }))
+            };
+            
+            const reportContent = `REPORT MAGAZZINO SORRENTINO SHOW
+Generato il: ${new Date().toLocaleDateString('it-IT')}
+
+RIEPILOGO:
+- Materiali totali: ${report.totalMaterials}
+- Disponibili: ${report.availableCount}
+- Scorte basse: ${report.lowStockCount}
+- Esauriti: ${report.outOfStockCount}
+
+CATEGORIE: ${report.categories.join(', ')}
+
+MATERIALI CON SCORTE BASSE/ESAURITE:
+${report.lowStockItems.map(item => 
+    `• ${item.code} - ${item.name}: ${item.current}/${item.minimum}`
+).join('\n')}`;
+            
+            downloadCSV(reportContent, `report_magazzino_${new Date().toISOString().split('T')[0]}.txt`);
+            showNotification('Report generato', 'Report scaricato con successo');
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                closeModal();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            } else if (e.key === 'n' && e.ctrlKey) {
+                e.preventDefault();
+                openAddModal();
+            } else if (e.key === 'f' && e.ctrlKey) {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+        });
+    </script>
+</body>
+</html>
