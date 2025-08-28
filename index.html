@@ -4,348 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sorrentino Show - Gestione Eventi</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <!-- Loading Screen -->
-    <div class="loading" id="loadingScreen">
-        <div>
-            <div style="font-size: 48px; margin-bottom: 20px;">🔥</div>
-            <h2>Caricamento...</h2>
-        </div>
-    </div>
-
-    <!-- Login Screen -->
-    <div class="login-container" id="loginScreen">
-        <div class="login-card">
-            <div class="logo">
-                <h1>🎉 Sorrentino Show</h1>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Tipo Accesso</label>
-                <select class="form-select" id="userType" onchange="updateLoginHint()">
-                    <option value="">Seleziona...</option>
-                    <option value="admin">Amministratore</option>
-                    <option value="animator">Animatore Esistente</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-input" id="email" placeholder="email@esempio.com">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" class="form-input" id="password" placeholder="Password">
-            </div>
-            
-            <button class="btn-login" onclick="login()" id="loginBtn">Accedi</button>
-            
-            <!-- Registration Button -->
-            <div style="text-align: center; margin-top: 20px;">
-                <button class="btn-registration" onclick="goToRegistration()">
-                    📝 Candidati come Animatore
-                </button>
-                <p style="font-size: 12px; color: #7f8c8d; margin-top: 8px;">
-                    Non sei ancora nel team? Compila il modulo di candidatura
-                </p>
-            </div>
-            
-            <div id="loginHint" style="text-align: center; margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 8px; display: none;">
-                <small style="color: #666;"></small>
-            </div>
-        </div>
-    </div>
-
-    <!-- Admin App -->
-    <div class="app-container" id="adminApp">
-        <div class="app-header">
-            <button class="logout-btn" onclick="logout()">Esci</button>
-            <h1 class="header-title">🎉 Admin Panel</h1>
-            <div class="tabs">
-                <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
-                <div class="tab" onclick="switchTab('events')">Eventi</div>
-                <div class="tab" onclick="switchTab('warehouse')">Magazzino</div>
-                <div class="tab" onclick="switchTab('team')">Team</div>
-            </div>
-        </div>
-
-        <div class="content">
-            <div id="admin-dashboard" class="section active">
-                <div class="stat-card">
-                    <div class="stat-value">0</div>
-                    <div class="stat-label">Eventi Oggi</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">2</div>
-                    <div class="stat-label">Animatori Attivi</div>
-                </div>
-            </div>
-
-            <div id="admin-events" class="section">
-                <div id="eventsList"></div>
-                <div style="text-align: center; padding: 40px 20px; color: #7f8c8d;">
-                    <div style="font-size: 48px; margin-bottom: 15px;">📅</div>
-                    <p>Nessun evento programmato</p>
-                </div>
-            </div>
-
-            <div id="admin-warehouse" class="section">
-                <div class="stats-row">
-                    <div class="stat-card-small">
-                        <div class="stat-number" id="totalWarehouseMaterials">25</div>
-                        <div class="stat-label-small">Materiali Totali</div>
-                    </div>
-                    <div class="stat-card-small">
-                        <div class="stat-number" id="availableWarehouseMaterials">22</div>
-                        <div class="stat-label-small">Disponibili</div>
-                    </div>
-                    <div class="stat-card-small">
-                        <div class="stat-number" id="lowStockWarehouseMaterials">3</div>
-                        <div class="stat-label-small">Scorte Basse</div>
-                    </div>
-                </div>
-
-                <div class="action-buttons" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                    <button class="btn-action btn-start" onclick="openWarehouseModal()">+ Aggiungi</button>
-                    <button class="btn-action btn-materials" onclick="exportWarehouseInventory()">📊 Export</button>
-                </div>
-
-                <div class="search-bar" style="position: relative; margin-bottom: 15px;">
-                    <input type="text" class="form-input" placeholder="Cerca materiali..." id="warehouseSearchInput" oninput="filterWarehouseMaterials()" style="padding-right: 40px;">
-                    <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #7f8c8d;">🔍</span>
-                </div>
-
-                <div class="filter-tabs" style="display: flex; margin-bottom: 15px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                    <button class="filter-tab active" onclick="setWarehouseFilter('all')" style="flex: 1; padding: 8px; text-align: center; background: #667eea; color: white; border: none; font-size: 12px;">Tutti</button>
-                    <button class="filter-tab" onclick="setWarehouseFilter('available')" style="flex: 1; padding: 8px; text-align: center; background: white; color: #667eea; border: none; font-size: 12px;">Disponibili</button>
-                    <button class="filter-tab" onclick="setWarehouseFilter('low')" style="flex: 1; padding: 8px; text-align: center; background: white; color: #667eea; border: none; font-size: 12px;">Scorte Basse</button>
-                </div>
-
-                <div id="warehouseMaterialList">
-                    <!-- Materials will be populated by JavaScript -->
-                </div>
-
-                <div id="warehouseEmptyState" style="display: none; text-align: center; padding: 40px 20px; color: #7f8c8d;">
-                    <div style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;">📦</div>
-                    <h3>Nessun materiale trovato</h3>
-                    <p>Prova a modificare i filtri di ricerca</p>
-                </div>
-            </div>
-
-            <div id="admin-team" class="section">
-                <div class="animator-item">
-                    <div>
-                        <div class="animator-name">Daniele Sorrentino</div>
-                        <div style="font-size: 12px; color: #7f8c8d;">Animatore Junior</div>
-                    </div>
-                    <div class="animator-status">Disponibile</div>
-                </div>
-            </div>
-        </div>
-
-        <button class="fab" onclick="openModal()">+</button>
-    </div>
-
-    <!-- Animator Registration App -->
-    <div class="app-container" id="animatorApp">
-        <div class="app-header">
-            <button class="logout-btn" onclick="logout()">← Torna al Login</button>
-            <h1 class="header-title">👤 Candidatura</h1>
-        </div>
-
-        <div class="content">
-            <div style="text-align: center; margin-bottom: 30px;">
-                <div style="font-size: 48px; margin-bottom: 15px;">🎭</div>
-                <h2 style="color: #2c3e50; margin-bottom: 10px;">Diventa un Animatore</h2>
-                <p style="color: #7f8c8d;">Compila il modulo per unirti al team</p>
-            </div>
-
-            <form id="registrationForm" onsubmit="submitRegistration(event)">
-                <div class="form-group">
-                    <label class="form-label">Nome Completo *</label>
-                    <input type="text" class="form-input" id="regName" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Email *</label>
-                    <input type="email" class="form-input" id="regEmail" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Telefono *</label>
-                    <input type="tel" class="form-input" id="regPhone" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Data di Nascita *</label>
-                    <input type="date" class="form-input" id="regBirth" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Esperienza</label>
-                    <select class="form-select" id="regExp">
-                        <option>Nessuna esperienza</option>
-                        <option>1-2 anni</option>
-                        <option>3-5 anni</option>
-                        <option>Oltre 5 anni</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Specializzazioni</label>
-                    <div class="checkbox-grid">
-                        <label><input type="checkbox"> Trucca-bimbi</label>
-                        <label><input type="checkbox"> Palloncini</label>
-                        <label><input type="checkbox"> DJ/Musica</label>
-                        <label><input type="checkbox"> Giochi sportivi</label>
-                        <label><input type="checkbox"> Magia</label>
-                        <label><input type="checkbox"> Ballo</label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Disponibilità</label>
-                    <div class="checkbox-grid">
-                        <label><input type="checkbox"> Lunedì</label>
-                        <label><input type="checkbox"> Martedì</label>
-                        <label><input type="checkbox"> Mercoledì</label>
-                        <label><input type="checkbox"> Giovedì</label>
-                        <label><input type="checkbox"> Venerdì</label>
-                        <label><input type="checkbox"> Sabato</label>
-                        <label><input type="checkbox"> Domenica</label>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Motivazione</label>
-                    <textarea class="form-textarea" id="regMotivation" rows="3" placeholder="Perché vuoi unirti al nostro team?"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="regPrivacy" required>
-                        <span>Accetto il trattamento dei dati personali *</span>
-                    </label>
-                </div>
-                
-                <button type="submit" class="btn-submit">
-                    📝 Invia Candidatura
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Warehouse Modal -->
-    <div class="modal" id="warehouseModal">
-        <div class="modal-content">
-            <h2 id="warehouseModalTitle">Nuovo Materiale</h2>
-            
-            <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;">
-                    <label class="form-label">Codice</label>
-                    <input type="text" class="form-input" id="warehouseCode" placeholder="MT001">
-                </div>
-                <div style="flex: 1;">
-                    <label class="form-label">Icona</label>
-                    <input type="text" class="form-input" id="warehouseIcon" placeholder="📦" maxlength="2">
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Nome Materiale</label>
-                <input type="text" class="form-input" id="warehouseName" placeholder="Nome del materiale" required>
-            </div>
-            
-            <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;">
-                    <label class="form-label">Categoria</label>
-                    <select class="form-select" id="warehouseCategory" required>
-                        <option value="">Seleziona</option>
-                        <option value="Giochi">Giochi</option>
-                        <option value="Audio/Video">Audio/Video</option>
-                        <option value="Trucchi/Costumi">Trucchi/Costumi</option>
-                        <option value="Sport">Sport</option>
-                        <option value="Accessori">Accessori</option>
-                        <option value="Consumabili">Consumabili</option>
-                    </select>
-                </div>
-                <div style="flex: 1;">
-                    <label class="form-label">Quantità</label>
-                    <input type="number" class="form-input" id="warehouseQuantity" min="0" value="1" required>
-                </div>
-            </div>
-            
-            <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;">
-                    <label class="form-label">Soglia minima</label>
-                    <input type="number" class="form-input" id="warehouseThreshold" min="0" value="2">
-                </div>
-                <div style="flex: 1;">
-                    <label class="form-label">Posizione</label>
-                    <input type="text" class="form-input" id="warehouseLocation" placeholder="Scaffale A1">
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Note</label>
-                <textarea class="form-textarea" id="warehouseNotes" rows="2" placeholder="Note aggiuntive..."></textarea>
-            </div>
-            
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="closeModal('warehouseModal')">Annulla</button>
-                <button class="btn-save" onclick="saveWarehouseMaterial()">Salva</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Movement Modal -->
-    <div class="modal" id="movementModal">
-        <div class="modal-content">
-            <h2>Movimento Materiale</h2>
-            
-            <div class="form-group">
-                <label class="form-label">Materiale</label>
-                <input type="text" class="form-input" id="movementMaterial" readonly>
-            </div>
-            
-            <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;">
-                    <label class="form-label">Tipo</label>
-                    <select class="form-select" id="movementType">
-                        <option value="in">Entrata</option>
-                        <option value="out">Uscita</option>
-                        <option value="adjustment">Rettifica</option>
-                    </select>
-                </div>
-                <div style="flex: 1;">
-                    <label class="form-label">Quantità</label>
-                    <input type="number" class="form-input" id="movementQuantity" min="1" value="1">
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Motivo</label>
-                <textarea class="form-textarea" id="movementReason" rows="2" placeholder="Descrivi il motivo..."></textarea>
-            </div>
-            
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="closeModal('movementModal')">Annulla</button>
-                <button class="btn-save" onclick="saveMovement()">Conferma</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Notification -->
-    <div class="notification" id="notification">
-        <div id="notificationTitle">Notifica</div>
-        <div id="notificationMessage">Messaggio</div>
-    </div>
-
-    <script src="script.js"></script>
-
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -440,21 +98,6 @@
         .stat-number { font-size: 24px; font-weight: 700; color: #667eea; }
         .stat-label-small { font-size: 12px; color: #7f8c8d; margin-top: 5px; }
         
-        .material-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px; margin: 20px 0;
-        }
-        .material-grid-item {
-            background: white; border: 2px solid #e0e0e0; border-radius: 10px;
-            padding: 15px; text-align: center; cursor: pointer; transition: all 0.3s ease;
-        }
-        .material-grid-item:hover { border-color: #667eea; transform: translateY(-2px); }
-        .material-grid-item.selected { border-color: #27ae60; background: #d4edda; }
-        .material-grid-icon { font-size: 24px; margin-bottom: 8px; }
-        .material-grid-name { font-size: 12px; font-weight: 600; color: #2c3e50; }
-        
-        .selected-materials { background: #f8f9fa; border-radius: 10px; padding: 15px; margin: 20px 0; }
-        
         .animator-item { 
             background: white; border-radius: 10px; padding: 15px; 
             margin-bottom: 10px; display: flex; justify-content: space-between; 
@@ -530,9 +173,12 @@
         }
         .warehouse-action-btn:hover { color: #667eea; }
         
-        .filter-tabs .filter-tab.active { background: #667eea; color: white; }
-        .search-bar { position: relative; }
-        .action-buttons { display: flex; gap: 10px; }
+        .filter-tabs { display: flex; margin-bottom: 15px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .filter-tab {
+            flex: 1; padding: 8px; text-align: center; background: white; color: #667eea; 
+            border: none; font-size: 12px; cursor: pointer; font-weight: 500;
+        }
+        .filter-tab.active { background: #667eea; color: white; }
         
         .modal { 
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
@@ -541,8 +187,9 @@
         .modal.active { display: flex; }
         .modal-content { 
             background: white; border-radius: 20px; padding: 30px; 
-            width: 90%; max-width: 450px;
+            width: 90%; max-width: 450px; max-height: 90vh; overflow-y: auto;
         }
+        .modal-title { font-size: 20px; font-weight: 600; color: #2c3e50; margin-bottom: 20px; text-align: center; }
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
         .btn-cancel, .btn-save { 
             flex: 1; padding: 12px; border: none; border-radius: 10px; 
@@ -560,10 +207,368 @@
         #notificationTitle { font-weight: 600; }
         #notificationMessage { font-size: 14px; color: #7f8c8d; }
     </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading" id="loadingScreen">
+        <div>
+            <div style="font-size: 48px; margin-bottom: 20px;">🔥</div>
+            <h2>Caricamento...</h2>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-card">
+            <div class="logo">
+                <h1>🎉 Sorrentino Show</h1>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Tipo Accesso</label>
+                <select class="form-select" id="userType" onchange="updateLoginHint()">
+                    <option value="">Seleziona...</option>
+                    <option value="admin">Amministratore</option>
+                    <option value="animator">Animatore Esistente</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="email" placeholder="email@esempio.com">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="password" placeholder="Password">
+            </div>
+            
+            <button class="btn-login" onclick="login()" id="loginBtn">Accedi</button>
+            
+            <!-- Registration Button -->
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn-registration" onclick="goToRegistration()">
+                    📝 Candidati come Animatore
+                </button>
+                <p style="font-size: 12px; color: #7f8c8d; margin-top: 8px;">
+                    Non sei ancora nel team? Compila il modulo di candidatura
+                </p>
+            </div>
+            
+            <div id="loginHint" style="text-align: center; margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 8px; display: none;">
+                <small style="color: #666;"></small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin App -->
+    <div class="app-container" id="adminApp">
+        <div class="app-header">
+            <button class="logout-btn" onclick="logout()">Esci</button>
+            <h1 class="header-title">🎉 Admin Panel</h1>
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
+                <div class="tab" onclick="switchTab('events')">Eventi</div>
+                <div class="tab" onclick="switchTab('warehouse')">Magazzino</div>
+                <div class="tab" onclick="switchTab('team')">Team</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="admin-dashboard" class="section active">
+                <div class="stat-card">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Eventi Oggi</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Animatori Attivi</div>
+                </div>
+            </div>
+
+            <div id="admin-events" class="section">
+                <div id="eventsList"></div>
+                <div style="text-align: center; padding: 40px 20px; color: #7f8c8d;">
+                    <div style="font-size: 48px; margin-bottom: 15px;">📅</div>
+                    <p>Nessun evento programmato</p>
+                </div>
+            </div>
+
+            <div id="admin-warehouse" class="section">
+                <div class="stats-row">
+                    <div class="stat-card-small">
+                        <div class="stat-number" id="totalWarehouseMaterials">8</div>
+                        <div class="stat-label-small">Materiali Totali</div>
+                    </div>
+                    <div class="stat-card-small">
+                        <div class="stat-number" id="availableWarehouseMaterials">7</div>
+                        <div class="stat-label-small">Disponibili</div>
+                    </div>
+                    <div class="stat-card-small">
+                        <div class="stat-number" id="lowStockWarehouseMaterials">2</div>
+                        <div class="stat-label-small">Scorte Basse</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn-action" onclick="openWarehouseModal()" style="background: #27ae60;">+ Aggiungi</button>
+                    <button class="btn-action" onclick="exportWarehouseInventory()" style="background: #9b59b6;">📊 Export</button>
+                </div>
+
+                <div style="position: relative; margin-bottom: 15px;">
+                    <input type="text" class="form-input" placeholder="Cerca materiali..." id="warehouseSearchInput" oninput="filterWarehouseMaterials()" style="padding-right: 40px;">
+                    <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #7f8c8d;">🔍</span>
+                </div>
+
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="setWarehouseFilter('all')">Tutti</button>
+                    <button class="filter-tab" onclick="setWarehouseFilter('available')">Disponibili</button>
+                    <button class="filter-tab" onclick="setWarehouseFilter('low')">Scorte Basse</button>
+                </div>
+
+                <div id="warehouseMaterialList"></div>
+
+                <div id="warehouseEmptyState" style="display: none; text-align: center; padding: 40px 20px; color: #7f8c8d;">
+                    <div style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;">📦</div>
+                    <h3>Nessun materiale trovato</h3>
+                    <p>Prova a modificare i filtri di ricerca</p>
+                </div>
+            </div>
+
+            <div id="admin-team" class="section">
+                <div class="animator-item">
+                    <div>
+                        <div class="animator-name">Daniele Sorrentino</div>
+                        <div style="font-size: 12px; color: #7f8c8d;">Animatore Junior</div>
+                    </div>
+                    <div class="animator-status">Disponibile</div>
+                </div>
+                <div class="animator-item">
+                    <div>
+                        <div class="animator-name">Antonio Maria Sirignano</div>
+                        <div style="font-size: 12px; color: #7f8c8d;">Animatore Junior</div>
+                    </div>
+                    <div class="animator-status">Disponibile</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="fab" onclick="openCurrentModal()">+</button>
+    </div>
+
+    <!-- Animator Registration App -->
+    <div class="app-container" id="animatorApp">
+        <div class="app-header">
+            <button class="logout-btn" onclick="logout()">← Torna al Login</button>
+            <h1 class="header-title">👤 Candidatura</h1>
+        </div>
+
+        <div class="content">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div style="font-size: 48px; margin-bottom: 15px;">🎭</div>
+                <h2 style="color: #2c3e50; margin-bottom: 10px;">Diventa un Animatore</h2>
+                <p style="color: #7f8c8d;">Compila il modulo per unirti al team</p>
+            </div>
+
+            <form id="registrationForm" onsubmit="submitRegistration(event)">
+                <div class="form-group">
+                    <label class="form-label">Nome Completo *</label>
+                    <input type="text" class="form-input" id="regName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    <input type="email" class="form-input" id="regEmail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Telefono *</label>
+                    <input type="tel" class="form-input" id="regPhone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Data di Nascita *</label>
+                    <input type="date" class="form-input" id="regBirth" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Esperienza</label>
+                    <select class="form-select" id="regExp">
+                        <option>Nessuna esperienza</option>
+                        <option>1-2 anni</option>
+                        <option>3-5 anni</option>
+                        <option>Oltre 5 anni</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Specializzazioni</label>
+                    <div class="checkbox-grid">
+                        <label><input type="checkbox"> Trucca-bimbi</label>
+                        <label><input type="checkbox"> Palloncini</label>
+                        <label><input type="checkbox"> DJ/Musica</label>
+                        <label><input type="checkbox"> Giochi sportivi</label>
+                        <label><input type="checkbox"> Magia</label>
+                        <label><input type="checkbox"> Ballo</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Disponibilità</label>
+                    <div class="checkbox-grid">
+                        <label><input type="checkbox"> Lunedì</label>
+                        <label><input type="checkbox"> Martedì</label>
+                        <label><input type="checkbox"> Mercoledì</label>
+                        <label><input type="checkbox"> Giovedì</label>
+                        <label><input type="checkbox"> Venerdì</label>
+                        <label><input type="checkbox"> Sabato</label>
+                        <label><input type="checkbox"> Domenica</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Motivazione</label>
+                    <textarea class="form-textarea" id="regMotivation" rows="3" placeholder="Perché vuoi unirti al nostro team?"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="regPrivacy" required>
+                        <span>Accetto il trattamento dei dati personali *</span>
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn-submit">
+                    📝 Invia Candidatura
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Warehouse Modal -->
+    <div class="modal" id="warehouseModal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="warehouseModalTitle">Nuovo Materiale</h2>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label class="form-label">Codice</label>
+                    <input type="text" class="form-input" id="warehouseCode" placeholder="MT001">
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">Icona</label>
+                    <input type="text" class="form-input" id="warehouseIcon" placeholder="📦" maxlength="2">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Nome Materiale</label>
+                <input type="text" class="form-input" id="warehouseName" required>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label class="form-label">Categoria</label>
+                    <select class="form-select" id="warehouseCategory" required>
+                        <option value="">Seleziona</option>
+                        <option value="Giochi">Giochi</option>
+                        <option value="Audio/Video">Audio/Video</option>
+                        <option value="Trucchi/Costumi">Trucchi/Costumi</option>
+                        <option value="Sport">Sport</option>
+                        <option value="Accessori">Accessori</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">Quantità</label>
+                    <input type="number" class="form-input" id="warehouseQuantity" min="0" value="1" required>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label class="form-label">Soglia minima</label>
+                    <input type="number" class="form-input" id="warehouseThreshold" min="0" value="2">
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">Posizione</label>
+                    <input type="text" class="form-input" id="warehouseLocation" placeholder="Scaffale A1">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Note</label>
+                <textarea class="form-textarea" id="warehouseNotes" rows="2"></textarea>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('warehouseModal')">Annulla</button>
+                <button class="btn-save" onclick="saveWarehouseMaterial()">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movement Modal -->
+    <div class="modal" id="movementModal">
+        <div class="modal-content">
+            <h2 class="modal-title">Movimento Materiale</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Materiale</label>
+                <input type="text" class="form-input" id="movementMaterial" readonly>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label class="form-label">Tipo</label>
+                    <select class="form-select" id="movementType">
+                        <option value="in">Entrata</option>
+                        <option value="out">Uscita</option>
+                        <option value="adjustment">Rettifica</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">Quantità</label>
+                    <input type="number" class="form-input" id="movementQuantity" min="1" value="1">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Motivo</label>
+                <textarea class="form-textarea" id="movementReason" rows="2"></textarea>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('movementModal')">Annulla</button>
+                <button class="btn-save" onclick="saveMovement()">Conferma</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div id="notificationTitle">Notifica</div>
+        <div id="notificationMessage">Messaggio</div>
+    </div>
 
     <script>
-        let selectedMaterials = [];
+        // Global variables
         let currentTab = 'dashboard';
+        
+        // Warehouse data
+        let warehouseMaterials = [
+            { id: 1, code: 'MT001', name: 'Birilli colorati', category: 'Giochi', icon: '🎳', quantity: 5, threshold: 2, location: 'Scaffale A1', notes: 'Set completo numerato' },
+            { id: 2, code: 'MT002', name: 'Set colori e pennelli', category: 'Trucchi/Costumi', icon: '🎨', quantity: 3, threshold: 1, location: 'Armadio B2', notes: 'Kit trucca-bimbi' },
+            { id: 3, code: 'MT003', name: 'Barattoli gioco', category: 'Giochi', icon: '🥤', quantity: 1, threshold: 3, location: 'Scaffale A3', notes: 'Gioco colpisci barattoli' },
+            { id: 4, code: 'MT004', name: 'Palloni gonfiabili', category: 'Sport', icon: '⚽', quantity: 2, threshold: 1, location: 'Deposito C1', notes: 'Per attività esterne' },
+            { id: 5, code: 'MT005', name: 'Coni segnalatori', category: 'Sport', icon: '🚦', quantity: 0, threshold: 5, location: 'Deposito C2', notes: 'Da riordinare' },
+            { id: 6, code: 'MT006', name: 'Microfono wireless', category: 'Audio/Video', icon: '🎤', quantity: 2, threshold: 1, location: 'Box tecnico', notes: 'Batterie incluse' },
+            { id: 7, code: 'MT007', name: 'Costumi principesse', category: 'Trucchi/Costumi', icon: '👗', quantity: 4, threshold: 2, location: 'Armadio A1', notes: 'Taglie assortite' },
+            { id: 8, code: 'MT008', name: 'Tappeto gioco', category: 'Accessori', icon: '🟫', quantity: 3, threshold: 1, location: 'Magazzino B', notes: 'Lavabili' }
+        ];
+        let filteredWarehouseMaterials = [...warehouseMaterials];
+        let currentWarehouseFilter = 'all';
+        let isWarehouseEditMode = false;
+        let editingWarehouseMaterial = null;
 
         // Initialize
         setTimeout(() => {
@@ -639,300 +644,18 @@
             event.target.classList.add('active');
             document.getElementById('admin-' + tabName).classList.add('active');
             
-            // Initialize warehouse when switching to it
             if (tabName === 'warehouse') {
                 renderWarehouseMaterials();
                 updateWarehouseStats();
             }
-        }
-
-        // Warehouse functions
-        function renderWarehouseMaterials() {
-            const container = document.getElementById('warehouseMaterialList');
-            const emptyState = document.getElementById('warehouseEmptyState');
-            
-            if (filteredWarehouseMaterials.length === 0) {
-                container.style.display = 'none';
-                emptyState.style.display = 'block';
-                return;
-            }
-            
-            container.style.display = 'block';
-            emptyState.style.display = 'none';
-            
-            container.innerHTML = filteredWarehouseMaterials.map(material => {
-                const stockStatus = material.quantity === 0 ? 'out-of-stock' : 
-                                  material.quantity <= material.threshold ? 'low-stock' : '';
-                const quantityClass = material.quantity === 0 ? 'zero' : 
-                                    material.quantity <= material.threshold ? 'low' : '';
-                
-                return `
-                    <div class="warehouse-material-item ${stockStatus}">
-                        <div class="warehouse-material-actions">
-                            <button class="warehouse-action-btn" onclick="openMovementModal(${material.id})" title="Movimento">📝</button>
-                            <button class="warehouse-action-btn" onclick="editWarehouseMaterial(${material.id})" title="Modifica">✏️</button>
-                            <button class="warehouse-action-btn" onclick="deleteWarehouseMaterial(${material.id})" title="Elimina">🗑️</button>
-                        </div>
-                        
-                        <div class="warehouse-material-header">
-                            <div class="warehouse-material-left">
-                                <div class="warehouse-material-code">${material.code}</div>
-                                <div class="warehouse-material-icon">${material.icon}</div>
-                                <div class="warehouse-material-info">
-                                    <div class="warehouse-material-name">${material.name}</div>
-                                    <div class="warehouse-material-category">${material.category}</div>
-                                </div>
-                            </div>
-                            <div class="warehouse-material-quantity">
-                                <div class="warehouse-quantity-number ${quantityClass}">${material.quantity}</div>
-                                <div class="warehouse-quantity-label">disponibili</div>
-                            </div>
-                        </div>
-                        
-                        <div class="warehouse-material-details">
-                            📍 ${material.location || 'Non specificata'} • 
-                            ⚠️ Min: ${material.threshold} • 
-                            ${material.notes || 'Nessuna nota'}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function updateWarehouseStats() {
-            const total = warehouseMaterials.length;
-            const available = warehouseMaterials.filter(m => m.quantity > 0).length;
-            const lowStock = warehouseMaterials.filter(m => m.quantity > 0 && m.quantity <= m.threshold).length;
-            
-            document.getElementById('totalWarehouseMaterials').textContent = total;
-            document.getElementById('availableWarehouseMaterials').textContent = available;
-            document.getElementById('lowStockWarehouseMaterials').textContent = lowStock;
-        }
-
-        function setWarehouseFilter(filter) {
-            currentWarehouseFilter = filter;
-            document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            switch(filter) {
-                case 'all': filteredWarehouseMaterials = [...warehouseMaterials]; break;
-                case 'available': filteredWarehouseMaterials = warehouseMaterials.filter(m => m.quantity > 0); break;
-                case 'low': filteredWarehouseMaterials = warehouseMaterials.filter(m => m.quantity > 0 && m.quantity <= m.threshold); break;
-            }
-            
-            filterWarehouseMaterials();
-        }
-
-        function filterWarehouseMaterials() {
-            const searchTerm = document.getElementById('warehouseSearchInput').value.toLowerCase();
-            
-            let baseFilter;
-            switch(currentWarehouseFilter) {
-                case 'available': baseFilter = warehouseMaterials.filter(m => m.quantity > 0); break;
-                case 'low': baseFilter = warehouseMaterials.filter(m => m.quantity > 0 && m.quantity <= m.threshold); break;
-                default: baseFilter = [...warehouseMaterials];
-            }
-            
-            filteredWarehouseMaterials = baseFilter.filter(material => 
-                material.name.toLowerCase().includes(searchTerm) || 
-                material.code.toLowerCase().includes(searchTerm) || 
-                material.category.toLowerCase().includes(searchTerm)
-            );
-            
-            renderWarehouseMaterials();
-        }
-
-        function openWarehouseModal() {
-            isWarehouseEditMode = false;
-            editingWarehouseMaterial = null;
-            document.getElementById('warehouseModalTitle').textContent = 'Aggiungi Materiale';
-            document.getElementById('warehouseCode').value = generateWarehouseCode();
-            document.getElementById('warehouseModal').classList.add('active');
-        }
-
-        function editWarehouseMaterial(id) {
-            const material = warehouseMaterials.find(m => m.id === id);
-            if (!material) return;
-            
-            isWarehouseEditMode = true;
-            editingWarehouseMaterial = material;
-            document.getElementById('warehouseModalTitle').textContent = 'Modifica Materiale';
-            
-            document.getElementById('warehouseCode').value = material.code;
-            document.getElementById('warehouseName').value = material.name;
-            document.getElementById('warehouseCategory').value = material.category;
-            document.getElementById('warehouseIcon').value = material.icon;
-            document.getElementById('warehouseQuantity').value = material.quantity;
-            document.getElementById('warehouseThreshold').value = material.threshold;
-            document.getElementById('warehouseLocation').value = material.location || '';
-            document.getElementById('warehouseNotes').value = material.notes || '';
-            
-            document.getElementById('warehouseModal').classList.add('active');
-        }
-
-        function deleteWarehouseMaterial(id) {
-            if (confirm('Sei sicuro di voler eliminare questo materiale?')) {
-                warehouseMaterials = warehouseMaterials.filter(m => m.id !== id);
-                setWarehouseFilter(currentWarehouseFilter);
-                updateWarehouseStats();
-                showNotification('Eliminato', 'Materiale rimosso dal magazzino');
-            }
-        }
-
-        function saveWarehouseMaterial() {
-            const code = document.getElementById('warehouseCode').value.trim();
-            const name = document.getElementById('warehouseName').value.trim();
-            const category = document.getElementById('warehouseCategory').value;
-            const icon = document.getElementById('warehouseIcon').value.trim();
-            const quantity = parseInt(document.getElementById('warehouseQuantity').value);
-            const threshold = parseInt(document.getElementById('warehouseThreshold').value);
-            const location = document.getElementById('warehouseLocation').value.trim();
-            const notes = document.getElementById('warehouseNotes').value.trim();
-            
-            if (!name || !category || quantity < 0) {
-                showNotification('Errore', 'Compila tutti i campi obbligatori');
-                return;
-            }
-            
-            if (!isWarehouseEditMode && warehouseMaterials.some(m => m.code === code)) {
-                showNotification('Errore', 'Codice già esistente');
-                return;
-            }
-            
-            const materialData = { code, name, category, icon: icon || '📦', quantity, threshold, location, notes };
-            
-            if (isWarehouseEditMode) {
-                Object.assign(editingWarehouseMaterial, materialData);
-                showNotification('Aggiornato', 'Materiale modificato con successo');
-            } else {
-                materialData.id = Date.now();
-                warehouseMaterials.push(materialData);
-                showNotification('Aggiunto', 'Nuovo materiale aggiunto al magazzino');
-            }
-            
-            closeModal('warehouseModal');
-            setWarehouseFilter(currentWarehouseFilter);
-            updateWarehouseStats();
-        }
-
-        function openMovementModal(id) {
-            const material = warehouseMaterials.find(m => m.id === id);
-            if (!material) return;
-            
-            document.getElementById('movementMaterial').value = `${material.code} - ${material.name}`;
-            document.getElementById('movementModal').classList.add('active');
-            window.currentMovementMaterial = material;
-        }
-
-        function saveMovement() {
-            const type = document.getElementById('movementType').value;
-            const quantity = parseInt(document.getElementById('movementQuantity').value);
-            const reason = document.getElementById('movementReason').value.trim();
-            
-            if (!quantity || quantity <= 0) {
-                showNotification('Errore', 'Inserisci una quantità valida');
-                return;
-            }
-            
-            const material = window.currentMovementMaterial;
-            if (!material) return;
-            
-            switch(type) {
-                case 'in':
-                    material.quantity += quantity;
-                    showNotification('Movimento registrato', `Aggiunti ${quantity} ${material.name}`);
-                    break;
-                case 'out':
-                    if (quantity > material.quantity) {
-                        showNotification('Errore', 'Quantità insufficiente');
-                        return;
-                    }
-                    material.quantity -= quantity;
-                    showNotification('Movimento registrato', `Prelevati ${quantity} ${material.name}`);
-                    break;
-                case 'adjustment':
-                    material.quantity = quantity;
-                    showNotification('Inventario aggiornato', `Quantità ${material.name} rettificata`);
-                    break;
-            }
-            
-            closeModal('movementModal');
-            setWarehouseFilter(currentWarehouseFilter);
-            updateWarehouseStats();
-        }
-
-        function generateWarehouseCode() {
-            const existingCodes = warehouseMaterials.map(m => m.code);
-            let counter = 1;
-            let newCode;
-            
-            do {
-                newCode = `MT${counter.toString().padStart(3, '0')}`;
-                counter++;
-            } while (existingCodes.includes(newCode));
-            
-            return newCode;
-        }
-
-        function exportWarehouseInventory() {
-            const csvContent = generateWarehouseCSV();
-            downloadCSV(csvContent, 'inventario_magazzino.csv');
-            showNotification('Export completato', 'File CSV scaricato');
-        }
-
-        function generateWarehouseCSV() {
-            const headers = ['Codice', 'Nome', 'Categoria', 'Quantità', 'Soglia', 'Posizione', 'Note'];
-            const rows = warehouseMaterials.map(m => [
-                m.code, m.name, m.category, m.quantity, m.threshold, 
-                m.location || '', m.notes || ''
-            ]);
-            
-            return [headers, ...rows].map(row => 
-                row.map(field => `"${field}"`).join(',')
-            ).join('\n');
-        }
-
-        function switchTab(tabName) {
-            currentTab = tabName;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            document.getElementById('admin-' + tabName).classList.add('active');
-            
-            // Initialize warehouse when switching to it
-            if (tabName === 'warehouse') {
-                renderWarehouseMaterials();
-                updateWarehouseStats();
-            }
-        }
-
-        // Close modal function
-        function closeModal(modalId) {
-            if (modalId) {
-                document.getElementById(modalId).classList.remove('active');
-            } else {
-                document.querySelectorAll('.modal').forEach(modal => {
-                    modal.classList.remove('active');
-                });
-            }
-            
-            // Reset forms
-            document.querySelectorAll('.modal input, .modal select, .modal textarea').forEach(element => {
-                if (element.type === 'checkbox') {
-                    element.checked = false;
-                } else if (element.type !== 'button') {
-                    element.value = '';
-                }
-            });
         }
 
         function openCurrentModal() {
             switch(currentTab) {
-                case 'events': openModal('eventModal'); break;
+                case 'events': showNotification('Eventi', 'Funzionalità in sviluppo'); break;
                 case 'warehouse': openWarehouseModal(); break;
-                case 'team': openModal('animatorModal'); break;
-                default: openModal('eventModal');
+                case 'team': showNotification('Team', 'Funzionalità in sviluppo'); break;
+                default: showNotification('Info', 'Seleziona una sezione');
             }
         }
 
@@ -1164,87 +887,41 @@
         }
 
         function exportWarehouseInventory() {
-            const csvContent = generateWarehouseCSV();
-            downloadCSV(csvContent, 'inventario_magazzino.csv');
+            const csvContent = 'Codice,Nome,Categoria,Quantità,Soglia,Posizione,Note\n' +
+                warehouseMaterials.map(m => 
+                    `"${m.code}","${m.name}","${m.category}","${m.quantity}","${m.threshold}","${m.location || ''}","${m.notes || ''}"`
+                ).join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'inventario_magazzino.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
             showNotification('Export completato', 'File CSV scaricato');
         }
 
-        function generateWarehouseCSV() {
-            const headers = ['Codice', 'Nome', 'Categoria', 'Quantità', 'Soglia', 'Posizione', 'Note'];
-            const rows = warehouseMaterials.map(m => [
-                m.code, m.name, m.category, m.quantity, m.threshold, 
-                m.location || '', m.notes || ''
-            ]);
-            
-            return [headers, ...rows].map(row => 
-                row.map(field => `"${field}"`).join(',')
-            ).join('\n');
-        }
-
-        function downloadCSV(content, filename) {
-            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', filename);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-        }All('.section').forEach(s => s.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            document.getElementById('admin-' + tabName).classList.add('active');
-        }
-
-        function toggleMaterial(code) {
-            const item = document.querySelector(`[onclick="toggleMaterial('${code}')"]`);
-            if (item.classList.contains('selected')) {
-                item.classList.remove('selected');
-                selectedMaterials = selectedMaterials.filter(m => m !== code);
+        function closeModal(modalId) {
+            if (modalId) {
+                document.getElementById(modalId).classList.remove('active');
             } else {
-                item.classList.add('selected');
-                selectedMaterials.push(code);
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.classList.remove('active');
+                });
             }
             
-            const selectedSection = document.getElementById('selectedMaterials');
-            if (selectedMaterials.length > 0) {
-                selectedSection.style.display = 'block';
-                document.getElementById('selectedList').innerHTML = 
-                    selectedMaterials.map(m => `<div>Materiale ${m}</div>`).join('');
-            } else {
-                selectedSection.style.display = 'none';
-            }
-        }
-
-        function confirmSelection() {
-            if (selectedMaterials.length === 0) {
-                showNotification('Errore', 'Seleziona almeno un materiale');
-                return;
-            }
-            showNotification('Confermato!', `${selectedMaterials.length} materiali prelevati`);
-            selectedMaterials = [];
-            document.querySelectorAll('.material-grid-item.selected').forEach(item => {
-                item.classList.remove('selected');
+            // Reset forms
+            document.querySelectorAll('.modal input, .modal select, .modal textarea').forEach(element => {
+                if (element.type === 'checkbox') {
+                    element.checked = false;
+                } else if (element.type !== 'button') {
+                    element.value = '';
+                }
             });
-            document.getElementById('selectedMaterials').style.display = 'none';
-        }
-
-        function openModal() {
-            document.getElementById('modal').classList.add('active');
-            document.getElementById('modalTitle').textContent = 'Nuovo ' + currentTab;
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-        }
-
-        function saveModal() {
-            showNotification('Salvato!', 'Elemento aggiunto con successo');
-            closeModal();
         }
 
         function submitRegistration(event) {
@@ -1288,6 +965,13 @@
                 showNotification('Completato', 'Puoi chiudere questa pagina');
             }, 2000);
         }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                closeModal();
+            }
+        });
     </script>
 </body>
 </html>
