@@ -95,30 +95,43 @@
             <div id="admin-warehouse" class="section">
                 <div class="stats-row">
                     <div class="stat-card-small">
-                        <div class="stat-number">12</div>
-                        <div class="stat-label-small">Materiali</div>
+                        <div class="stat-number" id="totalWarehouseMaterials">25</div>
+                        <div class="stat-label-small">Materiali Totali</div>
                     </div>
                     <div class="stat-card-small">
-                        <div class="stat-number">10</div>
+                        <div class="stat-number" id="availableWarehouseMaterials">22</div>
                         <div class="stat-label-small">Disponibili</div>
                     </div>
-                </div>
-                
-                <div class="material-grid">
-                    <div class="material-grid-item" onclick="toggleMaterial('001')">
-                        <div class="material-grid-icon">🎳</div>
-                        <div class="material-grid-name">Birilli</div>
-                    </div>
-                    <div class="material-grid-item" onclick="toggleMaterial('002')">
-                        <div class="material-grid-icon">🎨</div>
-                        <div class="material-grid-name">Colori</div>
+                    <div class="stat-card-small">
+                        <div class="stat-number" id="lowStockWarehouseMaterials">3</div>
+                        <div class="stat-label-small">Scorte Basse</div>
                     </div>
                 </div>
 
-                <div class="selected-materials" id="selectedMaterials" style="display: none;">
-                    <h4>Materiali Selezionati</h4>
-                    <div id="selectedList"></div>
-                    <button class="btn-action" onclick="confirmSelection()">Conferma Prelievo</button>
+                <div class="action-buttons" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn-action btn-start" onclick="openWarehouseModal()">+ Aggiungi</button>
+                    <button class="btn-action btn-materials" onclick="exportWarehouseInventory()">📊 Export</button>
+                </div>
+
+                <div class="search-bar" style="position: relative; margin-bottom: 15px;">
+                    <input type="text" class="form-input" placeholder="Cerca materiali..." id="warehouseSearchInput" oninput="filterWarehouseMaterials()" style="padding-right: 40px;">
+                    <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #7f8c8d;">🔍</span>
+                </div>
+
+                <div class="filter-tabs" style="display: flex; margin-bottom: 15px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <button class="filter-tab active" onclick="setWarehouseFilter('all')" style="flex: 1; padding: 8px; text-align: center; background: #667eea; color: white; border: none; font-size: 12px;">Tutti</button>
+                    <button class="filter-tab" onclick="setWarehouseFilter('available')" style="flex: 1; padding: 8px; text-align: center; background: white; color: #667eea; border: none; font-size: 12px;">Disponibili</button>
+                    <button class="filter-tab" onclick="setWarehouseFilter('low')" style="flex: 1; padding: 8px; text-align: center; background: white; color: #667eea; border: none; font-size: 12px;">Scorte Basse</button>
+                </div>
+
+                <div id="warehouseMaterialList">
+                    <!-- Materials will be populated by JavaScript -->
+                </div>
+
+                <div id="warehouseEmptyState" style="display: none; text-align: center; padding: 40px 20px; color: #7f8c8d;">
+                    <div style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;">📦</div>
+                    <h3>Nessun materiale trovato</h3>
+                    <p>Prova a modificare i filtri di ricerca</p>
                 </div>
             </div>
 
@@ -225,14 +238,102 @@
         </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal" id="modal">
+    <!-- Warehouse Modal -->
+    <div class="modal" id="warehouseModal">
         <div class="modal-content">
-            <h2 id="modalTitle">Nuovo</h2>
-            <div id="modalBody"></div>
+            <h2 id="warehouseModalTitle">Nuovo Materiale</h2>
+            
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label class="form-label">Codice</label>
+                    <input type="text" class="form-input" id="warehouseCode" placeholder="MT001">
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">Icona</label>
+                    <input type="text" class="form-input" id="warehouseIcon" placeholder="📦" maxlength="2">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Nome Materiale</label>
+                <input type="text" class="form-input" id="warehouseName" placeholder="Nome del materiale" required>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label class="form-label">Categoria</label>
+                    <select class="form-select" id="warehouseCategory" required>
+                        <option value="">Seleziona</option>
+                        <option value="Giochi">Giochi</option>
+                        <option value="Audio/Video">Audio/Video</option>
+                        <option value="Trucchi/Costumi">Trucchi/Costumi</option>
+                        <option value="Sport">Sport</option>
+                        <option value="Accessori">Accessori</option>
+                        <option value="Consumabili">Consumabili</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">Quantità</label>
+                    <input type="number" class="form-input" id="warehouseQuantity" min="0" value="1" required>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label class="form-label">Soglia minima</label>
+                    <input type="number" class="form-input" id="warehouseThreshold" min="0" value="2">
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">Posizione</label>
+                    <input type="text" class="form-input" id="warehouseLocation" placeholder="Scaffale A1">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Note</label>
+                <textarea class="form-textarea" id="warehouseNotes" rows="2" placeholder="Note aggiuntive..."></textarea>
+            </div>
+            
             <div class="modal-buttons">
-                <button class="btn-cancel" onclick="closeModal()">Annulla</button>
-                <button class="btn-save" onclick="saveModal()">Salva</button>
+                <button class="btn-cancel" onclick="closeModal('warehouseModal')">Annulla</button>
+                <button class="btn-save" onclick="saveWarehouseMaterial()">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movement Modal -->
+    <div class="modal" id="movementModal">
+        <div class="modal-content">
+            <h2>Movimento Materiale</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Materiale</label>
+                <input type="text" class="form-input" id="movementMaterial" readonly>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label class="form-label">Tipo</label>
+                    <select class="form-select" id="movementType">
+                        <option value="in">Entrata</option>
+                        <option value="out">Uscita</option>
+                        <option value="adjustment">Rettifica</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">Quantità</label>
+                    <input type="number" class="form-input" id="movementQuantity" min="1" value="1">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Motivo</label>
+                <textarea class="form-textarea" id="movementReason" rows="2" placeholder="Descrivi il motivo..."></textarea>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('movementModal')">Annulla</button>
+                <button class="btn-save" onclick="saveMovement()">Conferma</button>
             </div>
         </div>
     </div>
@@ -384,6 +485,55 @@
         .checkbox-grid label { display: flex; align-items: center; gap: 8px; font-size: 14px; }
         .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 14px; }
         
+        /* Warehouse specific styles */
+        .warehouse-material-item {
+            background: white; border-radius: 10px; padding: 15px; 
+            margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #27ae60; position: relative;
+        }
+        .warehouse-material-item.low-stock { border-left-color: #f39c12; }
+        .warehouse-material-item.out-of-stock { border-left-color: #e74c3c; }
+        
+        .warehouse-material-header {
+            display: flex; justify-content: space-between; 
+            align-items: flex-start; margin-bottom: 10px;
+        }
+        .warehouse-material-left {
+            display: flex; align-items: center; flex: 1;
+        }
+        .warehouse-material-code {
+            background: #667eea; color: white; padding: 4px 8px; 
+            border-radius: 6px; font-size: 12px; font-weight: 600; margin-right: 10px;
+        }
+        .warehouse-material-icon { font-size: 20px; margin-right: 10px; }
+        .warehouse-material-info { flex: 1; }
+        .warehouse-material-name { font-weight: 600; color: #2c3e50; font-size: 14px; }
+        .warehouse-material-category { font-size: 11px; color: #7f8c8d; margin-top: 2px; }
+        
+        .warehouse-material-quantity { text-align: right; }
+        .warehouse-quantity-number { font-size: 16px; font-weight: 600; color: #27ae60; }
+        .warehouse-quantity-number.low { color: #f39c12; }
+        .warehouse-quantity-number.zero { color: #e74c3c; }
+        .warehouse-quantity-label { font-size: 10px; color: #7f8c8d; }
+        
+        .warehouse-material-details {
+            font-size: 11px; color: #7f8c8d; margin-top: 8px;
+            padding-top: 8px; border-top: 1px solid #f0f0f0;
+        }
+        
+        .warehouse-material-actions {
+            position: absolute; top: 15px; right: 15px;
+        }
+        .warehouse-action-btn {
+            background: none; border: none; color: #7f8c8d; 
+            cursor: pointer; margin-left: 5px; font-size: 14px;
+        }
+        .warehouse-action-btn:hover { color: #667eea; }
+        
+        .filter-tabs .filter-tab.active { background: #667eea; color: white; }
+        .search-bar { position: relative; }
+        .action-buttons { display: flex; gap: 10px; }
+        
         .modal { 
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
             background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center;
@@ -485,6 +635,566 @@
             currentTab = tabName;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('admin-' + tabName).classList.add('active');
+            
+            // Initialize warehouse when switching to it
+            if (tabName === 'warehouse') {
+                renderWarehouseMaterials();
+                updateWarehouseStats();
+            }
+        }
+
+        // Warehouse functions
+        function renderWarehouseMaterials() {
+            const container = document.getElementById('warehouseMaterialList');
+            const emptyState = document.getElementById('warehouseEmptyState');
+            
+            if (filteredWarehouseMaterials.length === 0) {
+                container.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            container.style.display = 'block';
+            emptyState.style.display = 'none';
+            
+            container.innerHTML = filteredWarehouseMaterials.map(material => {
+                const stockStatus = material.quantity === 0 ? 'out-of-stock' : 
+                                  material.quantity <= material.threshold ? 'low-stock' : '';
+                const quantityClass = material.quantity === 0 ? 'zero' : 
+                                    material.quantity <= material.threshold ? 'low' : '';
+                
+                return `
+                    <div class="warehouse-material-item ${stockStatus}">
+                        <div class="warehouse-material-actions">
+                            <button class="warehouse-action-btn" onclick="openMovementModal(${material.id})" title="Movimento">📝</button>
+                            <button class="warehouse-action-btn" onclick="editWarehouseMaterial(${material.id})" title="Modifica">✏️</button>
+                            <button class="warehouse-action-btn" onclick="deleteWarehouseMaterial(${material.id})" title="Elimina">🗑️</button>
+                        </div>
+                        
+                        <div class="warehouse-material-header">
+                            <div class="warehouse-material-left">
+                                <div class="warehouse-material-code">${material.code}</div>
+                                <div class="warehouse-material-icon">${material.icon}</div>
+                                <div class="warehouse-material-info">
+                                    <div class="warehouse-material-name">${material.name}</div>
+                                    <div class="warehouse-material-category">${material.category}</div>
+                                </div>
+                            </div>
+                            <div class="warehouse-material-quantity">
+                                <div class="warehouse-quantity-number ${quantityClass}">${material.quantity}</div>
+                                <div class="warehouse-quantity-label">disponibili</div>
+                            </div>
+                        </div>
+                        
+                        <div class="warehouse-material-details">
+                            📍 ${material.location || 'Non specificata'} • 
+                            ⚠️ Min: ${material.threshold} • 
+                            ${material.notes || 'Nessuna nota'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateWarehouseStats() {
+            const total = warehouseMaterials.length;
+            const available = warehouseMaterials.filter(m => m.quantity > 0).length;
+            const lowStock = warehouseMaterials.filter(m => m.quantity > 0 && m.quantity <= m.threshold).length;
+            
+            document.getElementById('totalWarehouseMaterials').textContent = total;
+            document.getElementById('availableWarehouseMaterials').textContent = available;
+            document.getElementById('lowStockWarehouseMaterials').textContent = lowStock;
+        }
+
+        function setWarehouseFilter(filter) {
+            currentWarehouseFilter = filter;
+            document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            switch(filter) {
+                case 'all': filteredWarehouseMaterials = [...warehouseMaterials]; break;
+                case 'available': filteredWarehouseMaterials = warehouseMaterials.filter(m => m.quantity > 0); break;
+                case 'low': filteredWarehouseMaterials = warehouseMaterials.filter(m => m.quantity > 0 && m.quantity <= m.threshold); break;
+            }
+            
+            filterWarehouseMaterials();
+        }
+
+        function filterWarehouseMaterials() {
+            const searchTerm = document.getElementById('warehouseSearchInput').value.toLowerCase();
+            
+            let baseFilter;
+            switch(currentWarehouseFilter) {
+                case 'available': baseFilter = warehouseMaterials.filter(m => m.quantity > 0); break;
+                case 'low': baseFilter = warehouseMaterials.filter(m => m.quantity > 0 && m.quantity <= m.threshold); break;
+                default: baseFilter = [...warehouseMaterials];
+            }
+            
+            filteredWarehouseMaterials = baseFilter.filter(material => 
+                material.name.toLowerCase().includes(searchTerm) || 
+                material.code.toLowerCase().includes(searchTerm) || 
+                material.category.toLowerCase().includes(searchTerm)
+            );
+            
+            renderWarehouseMaterials();
+        }
+
+        function openWarehouseModal() {
+            isWarehouseEditMode = false;
+            editingWarehouseMaterial = null;
+            document.getElementById('warehouseModalTitle').textContent = 'Aggiungi Materiale';
+            document.getElementById('warehouseCode').value = generateWarehouseCode();
+            document.getElementById('warehouseModal').classList.add('active');
+        }
+
+        function editWarehouseMaterial(id) {
+            const material = warehouseMaterials.find(m => m.id === id);
+            if (!material) return;
+            
+            isWarehouseEditMode = true;
+            editingWarehouseMaterial = material;
+            document.getElementById('warehouseModalTitle').textContent = 'Modifica Materiale';
+            
+            document.getElementById('warehouseCode').value = material.code;
+            document.getElementById('warehouseName').value = material.name;
+            document.getElementById('warehouseCategory').value = material.category;
+            document.getElementById('warehouseIcon').value = material.icon;
+            document.getElementById('warehouseQuantity').value = material.quantity;
+            document.getElementById('warehouseThreshold').value = material.threshold;
+            document.getElementById('warehouseLocation').value = material.location || '';
+            document.getElementById('warehouseNotes').value = material.notes || '';
+            
+            document.getElementById('warehouseModal').classList.add('active');
+        }
+
+        function deleteWarehouseMaterial(id) {
+            if (confirm('Sei sicuro di voler eliminare questo materiale?')) {
+                warehouseMaterials = warehouseMaterials.filter(m => m.id !== id);
+                setWarehouseFilter(currentWarehouseFilter);
+                updateWarehouseStats();
+                showNotification('Eliminato', 'Materiale rimosso dal magazzino');
+            }
+        }
+
+        function saveWarehouseMaterial() {
+            const code = document.getElementById('warehouseCode').value.trim();
+            const name = document.getElementById('warehouseName').value.trim();
+            const category = document.getElementById('warehouseCategory').value;
+            const icon = document.getElementById('warehouseIcon').value.trim();
+            const quantity = parseInt(document.getElementById('warehouseQuantity').value);
+            const threshold = parseInt(document.getElementById('warehouseThreshold').value);
+            const location = document.getElementById('warehouseLocation').value.trim();
+            const notes = document.getElementById('warehouseNotes').value.trim();
+            
+            if (!name || !category || quantity < 0) {
+                showNotification('Errore', 'Compila tutti i campi obbligatori');
+                return;
+            }
+            
+            if (!isWarehouseEditMode && warehouseMaterials.some(m => m.code === code)) {
+                showNotification('Errore', 'Codice già esistente');
+                return;
+            }
+            
+            const materialData = { code, name, category, icon: icon || '📦', quantity, threshold, location, notes };
+            
+            if (isWarehouseEditMode) {
+                Object.assign(editingWarehouseMaterial, materialData);
+                showNotification('Aggiornato', 'Materiale modificato con successo');
+            } else {
+                materialData.id = Date.now();
+                warehouseMaterials.push(materialData);
+                showNotification('Aggiunto', 'Nuovo materiale aggiunto al magazzino');
+            }
+            
+            closeModal('warehouseModal');
+            setWarehouseFilter(currentWarehouseFilter);
+            updateWarehouseStats();
+        }
+
+        function openMovementModal(id) {
+            const material = warehouseMaterials.find(m => m.id === id);
+            if (!material) return;
+            
+            document.getElementById('movementMaterial').value = `${material.code} - ${material.name}`;
+            document.getElementById('movementModal').classList.add('active');
+            window.currentMovementMaterial = material;
+        }
+
+        function saveMovement() {
+            const type = document.getElementById('movementType').value;
+            const quantity = parseInt(document.getElementById('movementQuantity').value);
+            const reason = document.getElementById('movementReason').value.trim();
+            
+            if (!quantity || quantity <= 0) {
+                showNotification('Errore', 'Inserisci una quantità valida');
+                return;
+            }
+            
+            const material = window.currentMovementMaterial;
+            if (!material) return;
+            
+            switch(type) {
+                case 'in':
+                    material.quantity += quantity;
+                    showNotification('Movimento registrato', `Aggiunti ${quantity} ${material.name}`);
+                    break;
+                case 'out':
+                    if (quantity > material.quantity) {
+                        showNotification('Errore', 'Quantità insufficiente');
+                        return;
+                    }
+                    material.quantity -= quantity;
+                    showNotification('Movimento registrato', `Prelevati ${quantity} ${material.name}`);
+                    break;
+                case 'adjustment':
+                    material.quantity = quantity;
+                    showNotification('Inventario aggiornato', `Quantità ${material.name} rettificata`);
+                    break;
+            }
+            
+            closeModal('movementModal');
+            setWarehouseFilter(currentWarehouseFilter);
+            updateWarehouseStats();
+        }
+
+        function generateWarehouseCode() {
+            const existingCodes = warehouseMaterials.map(m => m.code);
+            let counter = 1;
+            let newCode;
+            
+            do {
+                newCode = `MT${counter.toString().padStart(3, '0')}`;
+                counter++;
+            } while (existingCodes.includes(newCode));
+            
+            return newCode;
+        }
+
+        function exportWarehouseInventory() {
+            const csvContent = generateWarehouseCSV();
+            downloadCSV(csvContent, 'inventario_magazzino.csv');
+            showNotification('Export completato', 'File CSV scaricato');
+        }
+
+        function generateWarehouseCSV() {
+            const headers = ['Codice', 'Nome', 'Categoria', 'Quantità', 'Soglia', 'Posizione', 'Note'];
+            const rows = warehouseMaterials.map(m => [
+                m.code, m.name, m.category, m.quantity, m.threshold, 
+                m.location || '', m.notes || ''
+            ]);
+            
+            return [headers, ...rows].map(row => 
+                row.map(field => `"${field}"`).join(',')
+            ).join('\n');
+        }
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('admin-' + tabName).classList.add('active');
+            
+            // Initialize warehouse when switching to it
+            if (tabName === 'warehouse') {
+                renderWarehouseMaterials();
+                updateWarehouseStats();
+            }
+        }
+
+        // Close modal function
+        function closeModal(modalId) {
+            if (modalId) {
+                document.getElementById(modalId).classList.remove('active');
+            } else {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+            
+            // Reset forms
+            document.querySelectorAll('.modal input, .modal select, .modal textarea').forEach(element => {
+                if (element.type === 'checkbox') {
+                    element.checked = false;
+                } else if (element.type !== 'button') {
+                    element.value = '';
+                }
+            });
+        }
+
+        function openCurrentModal() {
+            switch(currentTab) {
+                case 'events': openModal('eventModal'); break;
+                case 'warehouse': openWarehouseModal(); break;
+                case 'team': openModal('animatorModal'); break;
+                default: openModal('eventModal');
+            }
+        }
+
+        // Warehouse functions
+        function renderWarehouseMaterials() {
+            const container = document.getElementById('warehouseMaterialList');
+            const emptyState = document.getElementById('warehouseEmptyState');
+            
+            if (filteredWarehouseMaterials.length === 0) {
+                container.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            container.style.display = 'block';
+            emptyState.style.display = 'none';
+            
+            container.innerHTML = filteredWarehouseMaterials.map(material => {
+                const stockStatus = material.quantity === 0 ? 'out-of-stock' : 
+                                  material.quantity <= material.threshold ? 'low-stock' : '';
+                const quantityClass = material.quantity === 0 ? 'zero' : 
+                                    material.quantity <= material.threshold ? 'low' : '';
+                
+                return `
+                    <div class="warehouse-material-item ${stockStatus}">
+                        <div class="warehouse-material-actions">
+                            <button class="warehouse-action-btn" onclick="openMovementModal(${material.id})" title="Movimento">📝</button>
+                            <button class="warehouse-action-btn" onclick="editWarehouseMaterial(${material.id})" title="Modifica">✏️</button>
+                            <button class="warehouse-action-btn" onclick="deleteWarehouseMaterial(${material.id})" title="Elimina">🗑️</button>
+                        </div>
+                        
+                        <div class="warehouse-material-header">
+                            <div class="warehouse-material-left">
+                                <div class="warehouse-material-code">${material.code}</div>
+                                <div class="warehouse-material-icon">${material.icon}</div>
+                                <div class="warehouse-material-info">
+                                    <div class="warehouse-material-name">${material.name}</div>
+                                    <div class="warehouse-material-category">${material.category}</div>
+                                </div>
+                            </div>
+                            <div class="warehouse-material-quantity">
+                                <div class="warehouse-quantity-number ${quantityClass}">${material.quantity}</div>
+                                <div class="warehouse-quantity-label">disponibili</div>
+                            </div>
+                        </div>
+                        
+                        <div class="warehouse-material-details">
+                            📍 ${material.location || 'Non specificata'} • 
+                            ⚠️ Min: ${material.threshold} • 
+                            ${material.notes || 'Nessuna nota'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateWarehouseStats() {
+            const total = warehouseMaterials.length;
+            const available = warehouseMaterials.filter(m => m.quantity > 0).length;
+            const lowStock = warehouseMaterials.filter(m => m.quantity > 0 && m.quantity <= m.threshold).length;
+            
+            document.getElementById('totalWarehouseMaterials').textContent = total;
+            document.getElementById('availableWarehouseMaterials').textContent = available;
+            document.getElementById('lowStockWarehouseMaterials').textContent = lowStock;
+        }
+
+        function setWarehouseFilter(filter) {
+            currentWarehouseFilter = filter;
+            document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            switch(filter) {
+                case 'all': filteredWarehouseMaterials = [...warehouseMaterials]; break;
+                case 'available': filteredWarehouseMaterials = warehouseMaterials.filter(m => m.quantity > 0); break;
+                case 'low': filteredWarehouseMaterials = warehouseMaterials.filter(m => m.quantity > 0 && m.quantity <= m.threshold); break;
+            }
+            
+            filterWarehouseMaterials();
+        }
+
+        function filterWarehouseMaterials() {
+            const searchTerm = document.getElementById('warehouseSearchInput').value.toLowerCase();
+            
+            let baseFilter;
+            switch(currentWarehouseFilter) {
+                case 'available': baseFilter = warehouseMaterials.filter(m => m.quantity > 0); break;
+                case 'low': baseFilter = warehouseMaterials.filter(m => m.quantity > 0 && m.quantity <= m.threshold); break;
+                default: baseFilter = [...warehouseMaterials];
+            }
+            
+            filteredWarehouseMaterials = baseFilter.filter(material => 
+                material.name.toLowerCase().includes(searchTerm) || 
+                material.code.toLowerCase().includes(searchTerm) || 
+                material.category.toLowerCase().includes(searchTerm)
+            );
+            
+            renderWarehouseMaterials();
+        }
+
+        function openWarehouseModal() {
+            isWarehouseEditMode = false;
+            editingWarehouseMaterial = null;
+            document.getElementById('warehouseModalTitle').textContent = 'Aggiungi Materiale';
+            document.getElementById('warehouseCode').value = generateWarehouseCode();
+            document.getElementById('warehouseModal').classList.add('active');
+        }
+
+        function editWarehouseMaterial(id) {
+            const material = warehouseMaterials.find(m => m.id === id);
+            if (!material) return;
+            
+            isWarehouseEditMode = true;
+            editingWarehouseMaterial = material;
+            document.getElementById('warehouseModalTitle').textContent = 'Modifica Materiale';
+            
+            document.getElementById('warehouseCode').value = material.code;
+            document.getElementById('warehouseName').value = material.name;
+            document.getElementById('warehouseCategory').value = material.category;
+            document.getElementById('warehouseIcon').value = material.icon;
+            document.getElementById('warehouseQuantity').value = material.quantity;
+            document.getElementById('warehouseThreshold').value = material.threshold;
+            document.getElementById('warehouseLocation').value = material.location || '';
+            document.getElementById('warehouseNotes').value = material.notes || '';
+            
+            document.getElementById('warehouseModal').classList.add('active');
+        }
+
+        function deleteWarehouseMaterial(id) {
+            if (confirm('Sei sicuro di voler eliminare questo materiale?')) {
+                warehouseMaterials = warehouseMaterials.filter(m => m.id !== id);
+                setWarehouseFilter(currentWarehouseFilter);
+                updateWarehouseStats();
+                showNotification('Eliminato', 'Materiale rimosso dal magazzino');
+            }
+        }
+
+        function saveWarehouseMaterial() {
+            const code = document.getElementById('warehouseCode').value.trim();
+            const name = document.getElementById('warehouseName').value.trim();
+            const category = document.getElementById('warehouseCategory').value;
+            const icon = document.getElementById('warehouseIcon').value.trim();
+            const quantity = parseInt(document.getElementById('warehouseQuantity').value);
+            const threshold = parseInt(document.getElementById('warehouseThreshold').value);
+            const location = document.getElementById('warehouseLocation').value.trim();
+            const notes = document.getElementById('warehouseNotes').value.trim();
+            
+            if (!name || !category || quantity < 0) {
+                showNotification('Errore', 'Compila tutti i campi obbligatori');
+                return;
+            }
+            
+            if (!isWarehouseEditMode && warehouseMaterials.some(m => m.code === code)) {
+                showNotification('Errore', 'Codice già esistente');
+                return;
+            }
+            
+            const materialData = { code, name, category, icon: icon || '📦', quantity, threshold, location, notes };
+            
+            if (isWarehouseEditMode) {
+                Object.assign(editingWarehouseMaterial, materialData);
+                showNotification('Aggiornato', 'Materiale modificato con successo');
+            } else {
+                materialData.id = Date.now();
+                warehouseMaterials.push(materialData);
+                showNotification('Aggiunto', 'Nuovo materiale aggiunto al magazzino');
+            }
+            
+            closeModal('warehouseModal');
+            setWarehouseFilter(currentWarehouseFilter);
+            updateWarehouseStats();
+        }
+
+        function openMovementModal(id) {
+            const material = warehouseMaterials.find(m => m.id === id);
+            if (!material) return;
+            
+            document.getElementById('movementMaterial').value = `${material.code} - ${material.name}`;
+            document.getElementById('movementModal').classList.add('active');
+            window.currentMovementMaterial = material;
+        }
+
+        function saveMovement() {
+            const type = document.getElementById('movementType').value;
+            const quantity = parseInt(document.getElementById('movementQuantity').value);
+            
+            if (!quantity || quantity <= 0) {
+                showNotification('Errore', 'Inserisci una quantità valida');
+                return;
+            }
+            
+            const material = window.currentMovementMaterial;
+            if (!material) return;
+            
+            switch(type) {
+                case 'in':
+                    material.quantity += quantity;
+                    showNotification('Movimento registrato', `Aggiunti ${quantity} ${material.name}`);
+                    break;
+                case 'out':
+                    if (quantity > material.quantity) {
+                        showNotification('Errore', 'Quantità insufficiente');
+                        return;
+                    }
+                    material.quantity -= quantity;
+                    showNotification('Movimento registrato', `Prelevati ${quantity} ${material.name}`);
+                    break;
+                case 'adjustment':
+                    material.quantity = quantity;
+                    showNotification('Inventario aggiornato', `Quantità ${material.name} rettificata`);
+                    break;
+            }
+            
+            closeModal('movementModal');
+            setWarehouseFilter(currentWarehouseFilter);
+            updateWarehouseStats();
+        }
+
+        function generateWarehouseCode() {
+            const existingCodes = warehouseMaterials.map(m => m.code);
+            let counter = warehouseMaterials.length + 1;
+            let newCode;
+            
+            do {
+                newCode = `MT${counter.toString().padStart(3, '0')}`;
+                counter++;
+            } while (existingCodes.includes(newCode));
+            
+            return newCode;
+        }
+
+        function exportWarehouseInventory() {
+            const csvContent = generateWarehouseCSV();
+            downloadCSV(csvContent, 'inventario_magazzino.csv');
+            showNotification('Export completato', 'File CSV scaricato');
+        }
+
+        function generateWarehouseCSV() {
+            const headers = ['Codice', 'Nome', 'Categoria', 'Quantità', 'Soglia', 'Posizione', 'Note'];
+            const rows = warehouseMaterials.map(m => [
+                m.code, m.name, m.category, m.quantity, m.threshold, 
+                m.location || '', m.notes || ''
+            ]);
+            
+            return [headers, ...rows].map(row => 
+                row.map(field => `"${field}"`).join(',')
+            ).join('\n');
+        }
+
+        function downloadCSV(content, filename) {
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }All('.section').forEach(s => s.classList.remove('active'));
             
             event.target.classList.add('active');
             document.getElementById('admin-' + tabName).classList.add('active');
